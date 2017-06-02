@@ -1,8 +1,12 @@
 package client;
 
+import commons.BasicFuture;
 import odis.serialize.IWritable;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by zhaoshiqiang on 2017/6/1.
@@ -10,11 +14,14 @@ import java.util.concurrent.Future;
 public class Client {
 
     private Connection connection;
-//    private final Map<Long, Future> callMap = new ConcurrentHashMap<Long, Future>();
-    private ClientHandler clientHandler;
+    private final Map<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
 
+    private AtomicLong reqId = new AtomicLong(0);
     public Future submit(IWritable... objs){
-            connection.getSession().write(objs);
-        return clientHandler.getFuture();
+        long id = reqId.addAndGet(1);
+        BasicFuture future = new BasicFuture();
+        callMap.put(id,future);
+        connection.getSession().write(objs);
+        return future;
     }
 }
