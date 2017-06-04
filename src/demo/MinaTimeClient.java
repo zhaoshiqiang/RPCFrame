@@ -24,12 +24,13 @@ public class MinaTimeClient {
 
     public static void main(String[] args) throws UnknownHostException, ExecutionException, InterruptedException {
         Client client = Client.getNewInstance(new InetSocketAddress(InetAddress.getLocalHost(),8080));
+        long start = System.currentTimeMillis();
         Future future = client.submit("hi zhaoshiqiang");
-        System.out.println("wait...");
-        System.out.println("wait...");
-        System.out.println("wait...");
+        Thread.sleep(50);
         System.out.println(future.get());
-        client.close();
+        long mid = System.currentTimeMillis();
+        System.out.println(mid - start + "ms");
+
 
     }
 

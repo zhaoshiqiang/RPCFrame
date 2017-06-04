@@ -47,6 +47,7 @@ public class MinaTimeServer {
                 session.close();
                 return;
             }
+            Thread.sleep(100);
             session.write("hi client!");
             System.out.println("Message written : " + strMsg);
         }
