@@ -13,11 +13,20 @@ import java.util.concurrent.Future;
  */
 public class ClientHandler extends IoHandlerAdapter {
 
-    private final Map<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
+    private final Map<Long, BasicFuture> callMap;
+
+    public ClientHandler(Map<Long, BasicFuture> callMap) {
+        this.callMap = callMap;
+    }
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        BasicFuture future = callMap.get(0);
+        BasicFuture future = callMap.get(1l);
         future.setDone(null,message);
+    }
+
+    @Override
+    public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+        super.exceptionCaught(session, cause);
     }
 }

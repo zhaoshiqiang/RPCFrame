@@ -1,5 +1,7 @@
 package demo;
 
+import client.Client;
+import odis.serialize.lib.StringWritable;
 import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
@@ -12,22 +14,22 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by zhaoshq on 2017/5/31.
  */
 public class MinaTimeClient {
 
-    public static void main(String[] args) throws UnknownHostException {
-        SocketConnector connector = new SocketConnector();
-        connector.getFilterChain().addLast("logger",new LoggingFilter());
-        connector.getFilterChain().addLast("codec",new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
-        ConnectFuture connFuture = connector.connect(new InetSocketAddress(InetAddress.getLocalHost(),8080),new TimeClientHandler());
-        connFuture.join();
-        IoSession session = connFuture.getSession();
-        session.write("hi server");
-        session.write("quite");
-        session.close();
+    public static void main(String[] args) throws UnknownHostException, ExecutionException, InterruptedException {
+        Client client = Client.getNewInstance(new InetSocketAddress(InetAddress.getLocalHost(),8080));
+        Future future = client.submit("hi zhaoshiqiang");
+        System.out.println("wait...");
+        System.out.println("wait...");
+        System.out.println("wait...");
+        System.out.println(future.get());
+        client.close();
 
     }
 
