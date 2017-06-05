@@ -3,6 +3,15 @@ package commons;
 import java.util.concurrent.*;
 
 /**
+ * 基本的future实现，实现主要包括如下的部分：
+ * <ul>
+ * <li> {@link Future} 的基本访问接口，包括同步接口和结果访问接口</li>
+ * <li> 实际任务的数据反馈接口：{@link #setDone(Throwable, Object)}.
+ * <li> 对于任务回调的支持（还未实现）.
+ * </ul>
+ *
+ * 这个实现不支持 {@link #cancel(boolean)}，所以， {@link #cancel(boolean)}
+ * 和 {@link #isCancelled()} 方法都是直接返回false.
  * Created by zhaoshq on 2017/6/1.
  */
 public class BasicFuture implements Future {
@@ -15,22 +24,35 @@ public class BasicFuture implements Future {
     private Object result;
     private int status=CALLSTAT_RUNNING;
     private Throwable invocationException;
-
+    /**
+     * 这个future实现不支持cancel，所以本方法直接返回false.
+     */
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         return false;
     }
-
+    /**
+     * 当前实现不支持cancel，所以，这个方法一定返回false.
+     */
     @Override
     public boolean isCancelled() {
         return false;
     }
 
+    /**
+     * 判断当前的请求是否已经完成，如果这个方法返回true，后续对于 {@link #get()}的调用
+     * 一定立即返回.
+     */
     @Override
     public boolean isDone() {
         return status == CALLSTAT_FINISHED;
     }
 
+    /**
+     * 设置任务的返回数据
+     * @param invocationException
+     * @param result
+     */
     public void setDone(Throwable invocationException, Object result){
         if (status == CALLSTAT_RUNNING){
             status = CALLSTAT_FINISHED;
@@ -40,6 +62,11 @@ public class BasicFuture implements Future {
         }
     }
 
+    /**
+     * 在当前future的状态是已完成的情况下，根据保存的结果数据和exception信息构造返回值.
+     * @return
+     * @throws ExecutionException
+     */
     private Object getResult() throws ExecutionException {
         if (status == CALLSTAT_FINISHED){
             if (invocationException != null){
@@ -52,6 +79,10 @@ public class BasicFuture implements Future {
         }
     }
 
+    /**
+     * 等待请求返回，并且返回请求的返回值. 请求过程中发生的exception都被保存在
+     * {@link ExecutionException} 中抛出.
+     */
     @Override
     public Object get() throws InterruptedException, ExecutionException {
         latch.await();

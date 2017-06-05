@@ -35,6 +35,11 @@ public class Client {
     }
     private AtomicLong reqId = new AtomicLong(0);
 
+    /**
+     * 提交一个请求，请求并不是立即完成的，请使用返回的{@link BasicFuture} 来得到call当前的状态.
+     * @param objs
+     * @return
+     */
     public Future submit(IWritable... objs){
         long id = reqId.addAndGet(1);
         BasicFuture future = new BasicFuture();

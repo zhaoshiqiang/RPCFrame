@@ -7,6 +7,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
+ * 在apache mina的ByteBuffer基础上实现的DataInput接口，主要用于兼容IWritable的输入.
+ * 需要注意的是，如下方法没有实现: {@link #readUTF()}, {@link #readLine()}.
+ *
+ * 在基本接口上，还增加了{@link #readAcsiiString()} 方法用于加速对于ascii字符串的读取.
  * Created by zhaoshiqiang on 2017/6/5.
  */
 public class ByteBufferInput implements DataInput {
@@ -101,6 +105,12 @@ public class ByteBufferInput implements DataInput {
         return DataInputStream.readUTF(this);
     }
 
+    /**
+     * 读入一个完全由ascii字符组成的字符串，例如类名，这里避免了字符集的转换，并且
+     * 也减少了临时缓存的创建.
+     * @return
+     * @throws IOException
+     */
     public String readAcsiiString() throws IOException {
         int len = readUnsignedShort();
         char[] chars = new char[len];

@@ -7,6 +7,12 @@ import java.io.IOException;
 import java.io.UTFDataFormatException;
 
 /**
+ * 在apache mina的ByteBuffer基础上实现的DataOutput接口，用于兼容IWritable对象的输出.
+ * 需要注意的是，如下方法没有实现: {@link #writeUTF(String)}, {@link #writeChars(String)},
+ * {@link #writeBytes(String)}.
+ *
+ * 在基本接口以外，还增加了{@link #writeAsciiString(String)}方法加速对于”类名“这样的ascii
+ * 字符串的输出.
  * Created by zhaoshiqiang on 2017/6/4.
  */
 public class ByteBufferOutput implements DataOutput {
