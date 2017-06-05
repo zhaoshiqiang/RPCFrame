@@ -23,13 +23,13 @@ import java.util.concurrent.Future;
 public class MinaTimeClient {
 
     public static void main(String[] args) throws UnknownHostException, ExecutionException, InterruptedException {
-        Client client = Client.getNewInstance(new InetSocketAddress(InetAddress.getLocalHost(),8080));
-        long start = System.currentTimeMillis();
-        Future future = client.submit("hi zhaoshiqiang");
-        Thread.sleep(50);
-        System.out.println(future.get());
-        long mid = System.currentTimeMillis();
-        System.out.println(mid - start + "ms");
+//        Client client = Client.getNewInstance(new InetSocketAddress(InetAddress.getLocalHost(),8080));
+//        long start = System.currentTimeMillis();
+//        Future future = client.submit("hi zhaoshiqiang");
+//        Thread.sleep(50);
+//        System.out.println(future.get());
+//        long mid = System.currentTimeMillis();
+//        System.out.println(mid - start + "ms");
 
 
     }

@@ -1,6 +1,9 @@
 package client;
 
 import commons.BasicFuture;
+import commons.DataPack;
+import odis.serialize.IWritable;
+import odis.serialize.lib.ObjectWritable;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 
@@ -21,8 +24,9 @@ public class ClientHandler extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        BasicFuture future = callMap.get(1l);
-        future.setDone(null,message);
+        DataPack pack = (DataPack) message;
+        BasicFuture future = callMap.get(pack.getSeq());
+        future.setDone(null,((ObjectWritable)pack.getFirst()).getObject());
     }
 
     @Override

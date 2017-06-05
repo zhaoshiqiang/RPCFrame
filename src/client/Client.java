@@ -1,6 +1,7 @@
 package client;
 
 import commons.BasicFuture;
+import commons.DataPack;
 import odis.serialize.IWritable;
 import org.apache.mina.common.IoHandler;
 import toolbox.misc.UnitUtils;
@@ -33,18 +34,18 @@ public class Client {
         connection = new Connection(addr, connectTimeout, writeTimeout, ioHandler);
     }
     private AtomicLong reqId = new AtomicLong(0);
-    public Future submit(String objs){
-        long id = reqId.addAndGet(1);
-        BasicFuture future = new BasicFuture();
-        connection.getCallMap().put(id,future);
-        connection.getSession().write(objs);
-        return future;
-    }
+
     public Future submit(IWritable... objs){
         long id = reqId.addAndGet(1);
         BasicFuture future = new BasicFuture();
         connection.getCallMap().put(id,future);
-        connection.getSession().write(objs);
+
+        DataPack pack = new DataPack();
+        pack.setSeq(id);
+        for (IWritable obj : objs){
+            pack.add(obj);
+        }
+        connection.getSession().write(pack);
         return future;
     }
     public void close(){

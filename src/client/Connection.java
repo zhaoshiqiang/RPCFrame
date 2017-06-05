@@ -1,6 +1,7 @@
 package client;
 
 import commons.BasicFuture;
+import commons.WritableCodecFactory;
 import org.apache.mina.common.*;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
@@ -43,7 +44,7 @@ public class Connection {
         }
         cfg.setConnectTimeout(realConnectTimeout);
         //设置编解码器
-        connector.getFilterChain().addLast("codec",new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
+        connector.getFilterChain().addLast("codec",new ProtocolCodecFilter(new WritableCodecFactory()));
         //ThreadModel的作用其实就是在处理链的最后（handler之前）添加一个ExecutorFilter过滤器。
         cfg.setThreadModel(ThreadModel.MANUAL);
 

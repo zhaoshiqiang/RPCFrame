@@ -1,6 +1,7 @@
 package rpc;
 
 import client.Client;
+import demo.hello.IHello;
 import odis.serialize.IWritable;
 import odis.serialize.lib.ObjectWritable;
 import odis.serialize.lib.StringWritable;
@@ -8,6 +9,7 @@ import odis.serialize.lib.StringWritable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.InetSocketAddress;
 import java.util.concurrent.Future;
 
 /**
@@ -18,6 +20,11 @@ public class RPCClient {
     private Client client;
 
     public <T> T getProxy(Class<T> cls){
+        return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls},new invokeProxy());
+    }
+
+    public  <T> T getProxy(InetSocketAddress addr, Class<T> cls) {
+        this.client = Client.getNewInstance(addr);
         return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls},new invokeProxy());
     }
 
