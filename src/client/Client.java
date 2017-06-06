@@ -17,10 +17,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class Client {
 
-    private Connection connection;
     public static final long DEFAULT_WRITE_TIMEOUT = 10 * UnitUtils.SECOND;
-
     public static final long DEFAULT_CONNECT_TIMEOUT = 10 * UnitUtils.SECOND;
+
+    private Connection connection;
 
     public static Client getNewInstance(InetSocketAddress addr){
         return getNewInstance(addr,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT);
