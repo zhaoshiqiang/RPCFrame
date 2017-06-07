@@ -1,22 +1,24 @@
 package server;
 
-import commons.DataPack;
-import demo.hello.HelloImpl;
-import odis.serialize.IWritable;
-import odis.serialize.lib.ObjectWritable;
-import odis.serialize.lib.StringWritable;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * Created by zhaoshiqiang on 2017/6/6.
  */
 public class ServerHandler extends IoHandlerAdapter {
+
+    private Executor executor;
+    private IRequestHandler requestHandler;
+
+    public ServerHandler(Executor executor, IRequestHandler requestHandler) {
+        this.executor = executor;
+        this.requestHandler = requestHandler;
+    }
+
     @Override
     public void sessionCreated(IoSession session) throws Exception {
         System.out.println(session.getRemoteAddress().toString());
@@ -29,29 +31,8 @@ public class ServerHandler extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        DataPack pack = (DataPack) message;
-        List<IWritable> list = pack.getList();
-        Iterator<IWritable> it = list.iterator();
-        String methodName = ((StringWritable)it.next()).get();
-        System.out.println(methodName);
 
-        Object[] params = new Object[list.size() - 1];
-        Class<?>[] paramTypes = new Class<?>[list.size() - 1];
-        for (int i=0 ; i<params.length ; i++){
-            IWritable obj = it.next();
-
-            params[i] = ((ObjectWritable) obj).getObject();
-            paramTypes[i] = ((ObjectWritable) obj).getDeclaredClass();
-        }
-        HelloImpl instance = new HelloImpl();
-        Method m = instance.getClass().getMethod(methodName,paramTypes);
-        Object result = m.invoke(instance,params);
-        ObjectWritable resultWritable = new ObjectWritable(m.getReturnType(),result);
-        DataPack respPack = new DataPack();
-        respPack.setSeq(pack.getSeq());
-        respPack.add(resultWritable);
-        session.write(respPack);
-
+        executor.execute(new TreadTask(session,message,requestHandler));
     }
 
     @Override
