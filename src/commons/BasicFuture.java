@@ -1,6 +1,7 @@
 package commons;
 
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 基本的future实现，实现主要包括如下的部分：
@@ -22,7 +23,8 @@ public class BasicFuture implements Future {
     private CountDownLatch latch = new CountDownLatch(1);
 
     private Object result;
-    private int status=CALLSTAT_RUNNING;
+    //之后如果支持cancel，那么其他线程会去修改这个状态，所以需要是线程安全的
+    private AtomicInteger status=new AtomicInteger(CALLSTAT_RUNNING);
     private Throwable invocationException;
     /**
      * 这个future实现不支持cancel，所以本方法直接返回false.
@@ -45,7 +47,7 @@ public class BasicFuture implements Future {
      */
     @Override
     public boolean isDone() {
-        return status == CALLSTAT_FINISHED;
+        return status.get() == CALLSTAT_FINISHED;
     }
 
     /**
@@ -54,8 +56,7 @@ public class BasicFuture implements Future {
      * @param result
      */
     public void setDone(Throwable invocationException, Object result){
-        if (status == CALLSTAT_RUNNING){
-            status = CALLSTAT_FINISHED;
+        if (status.compareAndSet(CALLSTAT_RUNNING,CALLSTAT_FINISHED)){
             this.invocationException = invocationException;
             this.result = result;
             latch.countDown();
@@ -68,14 +69,14 @@ public class BasicFuture implements Future {
      * @throws ExecutionException
      */
     private Object getResult() throws ExecutionException {
-        if (status == CALLSTAT_FINISHED){
+        if (status.get() == CALLSTAT_FINISHED){
             if (invocationException != null){
                 throw new ExecutionException(invocationException);
             }else {
                 return result;
             }
         }else {
-            throw new RuntimeException("bad status" + status);
+            throw new RuntimeException("bad status" + status.get());
         }
     }
 
