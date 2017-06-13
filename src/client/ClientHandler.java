@@ -22,7 +22,7 @@ public class ClientHandler extends IoHandlerAdapter {
     public void messageReceived(IoSession session, Object message) throws Exception {
         DataPack pack = (DataPack) message;
         BasicFuture future = callMap.get(pack.getSeq());
-        future.setDone(null,((ObjectWritable)pack.getFirst()).getObject());
+        future.setDone(null,pack.getFirst());
     }
 
     @Override

@@ -18,7 +18,7 @@ public class Client {
     public static final long DEFAULT_CONNECT_TIMEOUT = 10 * UnitUtils.SECOND;
 
     private Connection connection;
-    private ICallFutureFactory callFutureFactory = CallFuture.DefaultCallFutureFactory.getInstance();
+    private ICallFutureFactory callFutureFactory = CallFuture.DefaultCallFutureFactory.instance;
 
     public void setCallFutureFactory(ICallFutureFactory callFutureFactory) {
         this.callFutureFactory = callFutureFactory;

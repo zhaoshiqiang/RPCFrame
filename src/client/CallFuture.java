@@ -16,7 +16,6 @@ public class CallFuture extends BasicFuture {
 
     public enum DefaultCallFutureFactory implements ICallFutureFactory {
         instance;
-        public static ICallFutureFactory getInstance(){return instance;}
         @Override
         public BasicFuture create(ICallFinishListener listener) {
             return new CallFuture(listener);
