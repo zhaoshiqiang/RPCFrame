@@ -1,14 +1,11 @@
 package client;
 
-import commons.BasicFuture;
 import commons.DataPack;
 import odis.serialize.IWritable;
 import org.apache.mina.common.IoHandler;
 import toolbox.misc.UnitUtils;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -21,6 +18,11 @@ public class Client {
     public static final long DEFAULT_CONNECT_TIMEOUT = 10 * UnitUtils.SECOND;
 
     private Connection connection;
+    private ICallFutureFactory callFutureFactory = CallFuture.DefaultCallFutureFactory.getInstance();
+
+    public void setCallFutureFactory(ICallFutureFactory callFutureFactory) {
+        this.callFutureFactory = callFutureFactory;
+    }
 
     public static Client getNewInstance(InetSocketAddress addr){
         return getNewInstance(addr,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT);
@@ -38,11 +40,12 @@ public class Client {
     /**
      * 提交一个请求，请求并不是立即完成的，请使用返回的{@link BasicFuture} 来得到call当前的状态.
      * @param objs
+     * @param listener
      * @return
      */
-    public Future submit(IWritable... objs){
+    public Future submit(ICallFinishListener listener,IWritable... objs){
         long id = reqId.addAndGet(1);
-        BasicFuture future = new BasicFuture();
+        BasicFuture future = callFutureFactory.create(listener);
         connection.getCallMap().put(id,future);
 
         DataPack pack = new DataPack();

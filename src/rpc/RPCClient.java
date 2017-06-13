@@ -40,7 +40,7 @@ public class RPCClient {
             for (int i=0; i<argcount ; i++){
                 params[i+1] = new ObjectWritable(argTypes[i],args[i]);
             }
-            Future future = client.submit(params);
+            Future future = client.submit(null,params);
             return future.get();
         }
     }

@@ -1,4 +1,4 @@
-package commons;
+package client;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <ul>
  * <li> {@link Future} 的基本访问接口，包括同步接口和结果访问接口</li>
  * <li> 实际任务的数据反馈接口：{@link #setDone(Throwable, Object)}.
- * <li> 对于任务回调的支持（还未实现）.
+ * <li> 对于任务回调的支持.
  * </ul>
  *
  * 这个实现不支持 {@link #cancel(boolean)}，所以， {@link #cancel(boolean)}
@@ -26,6 +26,12 @@ public class BasicFuture implements Future {
     //之后如果支持cancel，那么其他线程会去修改这个状态，所以需要是线程安全的
     private AtomicInteger status=new AtomicInteger(CALLSTAT_RUNNING);
     private Throwable invocationException;
+    private ICallFinishListener listener;
+
+    public BasicFuture(ICallFinishListener listener) {
+        this.listener = listener;
+    }
+
     /**
      * 这个future实现不支持cancel，所以本方法直接返回false.
      */
@@ -60,6 +66,9 @@ public class BasicFuture implements Future {
             this.invocationException = invocationException;
             this.result = result;
             latch.countDown();
+            if (listener != null){
+                listener.onFinish(this);
+            }
         }
     }
 

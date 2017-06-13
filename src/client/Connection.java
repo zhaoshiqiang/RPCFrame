@@ -1,17 +1,14 @@
 package client;
 
-import commons.BasicFuture;
 import commons.WritableCodecFactory;
 import org.apache.mina.common.*;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import toolbox.misc.LogFormatter;
 import toolbox.misc.UnitUtils;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
