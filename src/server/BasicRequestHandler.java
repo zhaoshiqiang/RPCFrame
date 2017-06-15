@@ -1,4 +1,4 @@
-package rpc;
+package server;
 
 import demo.hello.HelloImpl;
 import odis.serialize.IWritable;
@@ -12,12 +12,13 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * 这个类是{@link IRequestHandler}的基本适配器，用户可以根据需要扩展这个类
  * Created by zhaoshiqiang on 2017/6/7.
  */
-public class RPCObjectRequestHandler implements IRequestHandler {
+public class BasicRequestHandler implements IRequestHandler {
     private Object instance;
 
-    public RPCObjectRequestHandler(Object instance) {
+    public BasicRequestHandler(Object instance) {
         this.instance = instance;
     }
 
@@ -40,4 +41,14 @@ public class RPCObjectRequestHandler implements IRequestHandler {
         Object result = m.invoke(instance,params);
         return new ObjectWritable(result.getClass(),result);
     }
+
+    enum Factory implements IRequestHandlerFactory{
+        BASIC_REQUEST_HANDLER_FACTORY;
+
+        @Override
+        public IRequestHandler create(Object instance) {
+            return new BasicRequestHandler(instance);
+        }
+    }
+
 }

@@ -12,7 +12,7 @@ public class PRCFrameTestServer {
 
     public static void main(String[] args) throws IOException {
 
-        new Server(port);
+        new Server(port,new HelloImpl());
         System.out.println("HelloServer started on port " + port);
     }
 }

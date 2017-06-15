@@ -7,26 +7,27 @@ import org.apache.mina.common.IoSession;
 /**
  * Created by zhaoshiqiang on 2017/6/7.
  */
-public class TreadTask implements Runnable{
+public class RequestTask implements Runnable{
 
     private IoSession session;
-    private Object message;
+    private DataPack pack;
     private IRequestHandler requestHandler;
 
-    public TreadTask(IoSession session, Object message, IRequestHandler requestHandler) {
+    public RequestTask(IoSession session, DataPack pack, IRequestHandler requestHandler) {
         this.session = session;
-        this.message = message;
+        this.pack = pack;
         this.requestHandler = requestHandler;
     }
 
     @Override
     public void run() {
-        DataPack pack = (DataPack) message;
+
         IWritable resultWritable = null;
 
         try {
             resultWritable = requestHandler.process(pack.getList(),session);
         }  catch (Throwable throwable) {
+            //这里需要把这个异常包裹成IWritable作为结果返回
             throwable.printStackTrace();
         }
 

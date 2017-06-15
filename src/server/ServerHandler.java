@@ -1,5 +1,6 @@
 package server;
 
+import commons.DataPack;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
@@ -31,8 +32,8 @@ public class ServerHandler extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-
-        executor.execute(new TreadTask(session,message,requestHandler));
+        DataPack pack = (DataPack) message;
+        executor.execute(new RequestTask(session,pack,requestHandler));
     }
 
     @Override

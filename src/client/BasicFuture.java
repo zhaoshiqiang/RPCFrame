@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * 这个实现不支持 {@link #cancel(boolean)}，所以， {@link #cancel(boolean)}
  * 和 {@link #isCancelled()} 方法都是直接返回false.
+ *
+ * 这个是Future的基本适配器，用户可以根据实际情况重写其中的方法
  * Created by zhaoshq on 2017/6/1.
  */
 public class BasicFuture implements Future {
