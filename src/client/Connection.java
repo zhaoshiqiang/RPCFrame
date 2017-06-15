@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class Connection {
     private static final Logger LOGGER = LogFormatter.getLogger(Connection.class);
-    private final Map<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
+    private final ConcurrentHashMap<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
     private IoSession session;
     private boolean closed;
     Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, IoHandler ioHandler){

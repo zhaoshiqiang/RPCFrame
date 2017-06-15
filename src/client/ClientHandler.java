@@ -6,15 +6,16 @@ import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by zhaoshq on 2017/6/1.
  */
 public class ClientHandler extends IoHandlerAdapter {
 
-    private final Map<Long, BasicFuture> callMap;
+    private final ConcurrentHashMap<Long, BasicFuture> callMap;
 
-    public ClientHandler(Map<Long, BasicFuture> callMap) {
+    public ClientHandler(ConcurrentHashMap<Long, BasicFuture> callMap) {
         this.callMap = callMap;
     }
 
