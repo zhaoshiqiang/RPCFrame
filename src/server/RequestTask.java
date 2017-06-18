@@ -12,11 +12,13 @@ public class RequestTask implements Runnable{
     private IoSession session;
     private DataPack pack;
     private IRequestHandler requestHandler;
+    private Context context;
 
-    public RequestTask(IoSession session, DataPack pack, IRequestHandler requestHandler) {
+    public RequestTask(IoSession session, DataPack pack, IRequestHandler requestHandler, Context context) {
         this.session = session;
         this.pack = pack;
         this.requestHandler = requestHandler;
+        this.context = context;
     }
 
     @Override
@@ -25,7 +27,7 @@ public class RequestTask implements Runnable{
         IWritable resultWritable = null;
 
         try {
-            resultWritable = requestHandler.process(pack.getList(),session);
+            resultWritable = requestHandler.process(pack.getList(),session,context);
         }  catch (Throwable throwable) {
             //这里需要把这个异常包裹成IWritable作为结果返回
             throwable.printStackTrace();

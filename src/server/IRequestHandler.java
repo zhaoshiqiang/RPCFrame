@@ -16,8 +16,9 @@ public interface IRequestHandler {
      * 实现代码必须保证线程安全.
      * @param inputList
      * @param session
+     * @param context
      * @return
      * @throws Throwable
      */
-    IWritable process(List<IWritable> inputList, IoSession session) throws Throwable;
+    IWritable process(List<IWritable> inputList, IoSession session,Context context) throws Throwable;
 }

@@ -26,9 +26,11 @@ public class Server {
         DefaultIoFilterChainBuilder chain = config.getFilterChain();
         chain.addLast("logger",new LoggingFilter());
         chain.addLast("codec",new ProtocolCodecFilter(new WritableCodecFactory()));
-        acceptor.bind(new InetSocketAddress(port), new ServerHandler(
-                new ThreadPoolExecutor(1,1,0l, TimeUnit.MILLISECONDS,new ArrayBlockingQueue<Runnable>(1)),requestHandlerFactory.create(instance)),
-                config);
+
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1,1,0l, TimeUnit.MILLISECONDS,new ArrayBlockingQueue<Runnable>(1));
+        ContextManager contextManager = new ContextManager();
+        ServerHandler handler = new ServerHandler(executor,requestHandlerFactory.create(instance),contextManager);
+        acceptor.bind(new InetSocketAddress(port), handler,config);
     }
 
 }

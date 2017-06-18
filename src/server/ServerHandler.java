@@ -1,6 +1,7 @@
 package server;
 
 import commons.DataPack;
+import odis.serialize.lib.StringWritable;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
@@ -14,10 +15,12 @@ public class ServerHandler extends IoHandlerAdapter {
 
     private Executor executor;
     private IRequestHandler requestHandler;
+    private ContextManager contextManager;
 
-    public ServerHandler(Executor executor, IRequestHandler requestHandler) {
+    public ServerHandler(Executor executor, IRequestHandler requestHandler, ContextManager contextManager) {
         this.executor = executor;
         this.requestHandler = requestHandler;
+        this.contextManager = contextManager;
     }
 
     @Override
@@ -33,7 +36,24 @@ public class ServerHandler extends IoHandlerAdapter {
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
         DataPack pack = (DataPack) message;
-        executor.execute(new RequestTask(session,pack,requestHandler));
+        long seqId = pack.getSeq();
+        if (seqId != -1){
+            StringWritable keyWritable = (StringWritable) pack.getFirst();
+            String key = keyWritable.get();
+            Context context = null;
+            if (key != null){
+                context = contextManager.attachSession(key,session);
+            }else {
+                context = contextManager.attachSession(null,session);
+            }
+            DataPack respPack = new DataPack();
+            respPack.setSeq(seqId);
+            respPack.add(new StringWritable(context.getName()));
+            session.write(respPack);
+        }else {
+            Context context = contextManager.getContext(session);
+            executor.execute(new RequestTask(session,pack,requestHandler,context));
+        }
     }
 
     @Override

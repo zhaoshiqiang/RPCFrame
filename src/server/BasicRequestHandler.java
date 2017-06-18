@@ -23,7 +23,7 @@ public class BasicRequestHandler implements IRequestHandler {
     }
 
     @Override
-    public IWritable process(List<IWritable> inputList, IoSession session) throws Throwable {
+    public IWritable process(List<IWritable> inputList, IoSession session,Context context) throws Throwable {
         Iterator<IWritable> it = inputList.iterator();
         String methodName = ((StringWritable)it.next()).get();
         System.out.println(methodName);
