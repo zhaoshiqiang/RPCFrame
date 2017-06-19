@@ -7,6 +7,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ *
+ * context管理器，将session和context的相关操作封装起来，其作用为：
+ * 1、管理context和session之间的关联关系
+ * 2、提供接口便于session被释放的时候关闭无关联的context.
+ * 3、在context创建和销毁的时候调用监听器中相关回调方法
+ *
  * 这个类会被多个线程调用，需要考虑并发
  * Created by zhaoshiqiang on 2017/6/18.
  */
@@ -24,10 +30,12 @@ public class ContextManager {
         this.contextListener = contextListener;
         this.contexts = new ConcurrentHashMap<String,Context>();
     }
+
     public ContextManager(){
         contextListener = null;
         this.contexts = new ConcurrentHashMap<String,Context>();
     }
+
     public Context attachSession(String key, IoSession session){
         Context oldContext = contexts.get(key);
         if (oldContext != null){

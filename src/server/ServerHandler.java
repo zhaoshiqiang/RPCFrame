@@ -38,6 +38,7 @@ public class ServerHandler extends IoHandlerAdapter {
         DataPack pack = (DataPack) message;
         long seqId = pack.getSeq();
         if (seqId != -1){
+            //将session与context关联起来
             StringWritable keyWritable = (StringWritable) pack.getFirst();
             String key = keyWritable.get();
             Context context = null;
@@ -50,7 +51,9 @@ public class ServerHandler extends IoHandlerAdapter {
             respPack.setSeq(seqId);
             respPack.add(new StringWritable(context.getName()));
             session.write(respPack);
+
         }else {
+            //调用方法
             Context context = contextManager.getContext(session);
             executor.execute(new RequestTask(session,pack,requestHandler,context));
         }
