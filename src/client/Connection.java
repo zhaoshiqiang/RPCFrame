@@ -33,6 +33,7 @@ public class Connection {
                 t.start();
             }
         });
+
         SocketConnectorConfig cfg = new SocketConnectorConfig();
         int realConnectTimeout = (int) (connectTimeout/ UnitUtils.SECOND);
         if (realConnectTimeout <= 0){
@@ -46,6 +47,7 @@ public class Connection {
         cfg.setThreadModel(ThreadModel.MANUAL);
 
         ConnectFuture connectFuture = connector.connect(addr,ioHandler == null ? new ClientHandler(callMap) : ioHandler,cfg);
+
         connectFuture.join();
         this.session = connectFuture.getSession();
         this.session.setWriteTimeout((int) (writeTimeout/UnitUtils.SECOND));

@@ -17,5 +17,7 @@ public class RPCFrameTestClient {
         IHello hello = new RPCClient().getProxy(addr, IHello.class);
         Object result = hello.hello("zhaoshiqiang",1);
         System.out.println(result);
+        System.out.println(hello.hello());
+
     }
 }

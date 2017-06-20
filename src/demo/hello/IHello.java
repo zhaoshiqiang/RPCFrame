@@ -5,5 +5,6 @@ package demo.hello;
  */
 public interface IHello {
 
-    public String hello(String name, int number);
+    String hello(String name, int number);
+    String hello();
 }

@@ -51,9 +51,8 @@ public class ServerHandler extends IoHandlerAdapter {
             respPack.setSeq(seqId);
             respPack.add(new StringWritable(context.getName()));
             session.write(respPack);
-
         }else {
-            //调用方法
+            //调用相关方法
             Context context = contextManager.getContext(session);
             executor.execute(new RequestTask(session,pack,requestHandler,context));
         }
