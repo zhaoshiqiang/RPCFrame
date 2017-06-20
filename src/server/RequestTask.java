@@ -27,10 +27,14 @@ public class RequestTask implements Runnable{
         IWritable resultWritable = null;
 
         try {
+
+            ThreadState.setState(context,session);
             resultWritable = requestHandler.process(pack.getList(),session,context);
         }  catch (Throwable throwable) {
             //这里需要把这个异常包裹成IWritable作为结果返回
             throwable.printStackTrace();
+        }finally {
+            ThreadState.removeState();
         }
 
         DataPack respPack = new DataPack();
