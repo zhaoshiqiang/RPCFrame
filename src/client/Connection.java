@@ -20,10 +20,10 @@ import java.util.logging.Logger;
  */
 public class Connection {
     private static final Logger LOGGER = LogFormatter.getLogger(Connection.class);
-    private final ConcurrentHashMap<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
+    private ConcurrentHashMap<Long, BasicFuture> callMap;
     private IoSession session;
     private boolean closed;
-    Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, IoHandler ioHandler){
+    Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, ClientBasicHandler handler){
         SocketConnector connector = new SocketConnector(1, new Executor() {
             @Override
             public void execute(Runnable command) {
@@ -45,14 +45,21 @@ public class Connection {
         connector.getFilterChain().addLast("codec",new ProtocolCodecFilter(new WritableCodecFactory()));
         //ThreadModel的作用其实就是在处理链的最后（handler之前）添加一个ExecutorFilter过滤器。
         cfg.setThreadModel(ThreadModel.MANUAL);
-
-        ConnectFuture connectFuture = connector.connect(addr,ioHandler == null ? new ClientHandler(callMap) : ioHandler,cfg);
+        ConnectFuture connectFuture = null;
+        if (handler == null){
+            callMap = new ConcurrentHashMap<Long, BasicFuture>();
+            connectFuture = connector.connect(addr,new ClientBasicHandler(callMap),cfg);
+        }else {
+            callMap = handler.getCallMap();
+            connectFuture = connector.connect(addr,handler,cfg);
+        }
 
         connectFuture.join();
         this.session = connectFuture.getSession();
         this.session.setWriteTimeout((int) (writeTimeout/UnitUtils.SECOND));
         this.closed = false;
     }
+
     public IoSession getSession() {
         return session;
     }

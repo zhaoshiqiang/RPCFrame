@@ -13,11 +13,11 @@ import java.util.logging.Logger;
 /**
  * Created by zhaoshq on 2017/6/1.
  */
-public class ClientHandler extends IoHandlerAdapter {
+public class ClientBasicHandler extends IoHandlerAdapter {
 
     public static final Logger LOG = LogFormatter.getLogger(Connection.class);
     private final ConcurrentHashMap<Long, BasicFuture> callMap;
-    public ClientHandler(ConcurrentHashMap<Long, BasicFuture> callMap) {
+    public ClientBasicHandler(ConcurrentHashMap<Long, BasicFuture> callMap) {
         this.callMap = callMap;
     }
     @Override
@@ -36,5 +36,9 @@ public class ClientHandler extends IoHandlerAdapter {
     @Override
     public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
         super.exceptionCaught(session, cause);
+    }
+
+    public ConcurrentHashMap<Long, BasicFuture> getCallMap() {
+        return callMap;
     }
 }

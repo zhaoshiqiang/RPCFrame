@@ -73,8 +73,7 @@ public class RPCClient {
     }
 
     public  <T> T getProxy(InetSocketAddress addr, Class<T> cls) {
-        this.client = Client.getNewInstance(addr);
-        this.client.setCallFutureFactory(RPCInvokeFuture.RPCInvokeFutureFactory.instance);
+        this.client = Client.getNewInstance(addr,RPCInvokeFuture.RPCInvokeFutureFactory.instance);
         return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls},new invokeProxy());
     }
 
