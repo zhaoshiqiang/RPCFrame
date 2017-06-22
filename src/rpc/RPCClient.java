@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +75,7 @@ public class RPCClient {
 
     public  <T> T getProxy(InetSocketAddress addr, Class<T> cls) {
         this.client = Client.getNewInstance(addr,RPCInvokeFuture.RPCInvokeFutureFactory.instance);
+
         return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls},new invokeProxy());
     }
 
@@ -85,10 +87,15 @@ public class RPCClient {
      * @param args
      * @return
      */
-    protected Object invokeProxyMethod(Object proxy,Method method, Object[] args) throws InterruptedException, ExecutionException, TimeoutException {
-
+    protected Object invokeProxyMethod(Object proxy,Method method, Object[] args) throws Throwable {
 
         Future future = invoke(method,args);
+
+        if (future == null) {
+            // cannot submit the request now
+            throw new RPCInvalidStateException("client connection state is invalid");
+        }
+
         try {
             if (callTimeout > 0){
                 return future.get(callTimeout,callTimeUnit);
@@ -96,14 +103,14 @@ public class RPCClient {
                 return future.get();
             }
         }catch (InterruptedException e) {
-            e.printStackTrace();
-            throw e;
+            throw new RPCException("call interrupted for method \"" +
+                    method.getName() + " \" with args: " + Arrays.deepToString(args), e);
         } catch (ExecutionException e) {
-            e.printStackTrace();
-            throw e;
+            throw new RPCException(e);
         } catch (TimeoutException e) {
-            e.printStackTrace();
-            throw e;
+            throw new RPCTimeoutException("call timeout for method \"" +
+                    method.getName() + "\" with args : " +
+                    Arrays.deepToString(args));
         }
     }
 
@@ -137,6 +144,8 @@ public class RPCClient {
         }
         return client.submit(listener,params);
     }
+
+
 
     private class invokeProxy implements InvocationHandler{
         @Override
