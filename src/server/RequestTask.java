@@ -1,6 +1,7 @@
 package server;
 
 import commons.DataPack;
+import commons.ExceptionWritable;
 import odis.serialize.IWritable;
 import org.apache.mina.common.IoSession;
 
@@ -32,7 +33,9 @@ public class RequestTask implements Runnable{
             resultWritable = requestHandler.process(pack.getList(),session,context);
         }  catch (Throwable throwable) {
             //这里需要把这个异常包裹成IWritable作为结果返回
-            throwable.printStackTrace();
+            ExceptionWritable ew = new ExceptionWritable();
+            ew.set(throwable);
+            resultWritable = ew;
         }finally {
             ThreadState.removeState();
         }
