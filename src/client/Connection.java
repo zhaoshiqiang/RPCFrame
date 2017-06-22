@@ -30,8 +30,7 @@ public class Connection {
     private final ConcurrentHashMap<Long, BasicFuture> callMap;
     private IoSession session;
     private AtomicLong reqId = new AtomicLong(0);
-    private boolean closed;
-    private final ReadWriteLock callMaplock = new ReentrantReadWriteLock();
+    private Boolean closed = false;
 
     Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, ClientBasicHandler handler){
         SocketConnector connector = new SocketConnector(1, new Executor() {
@@ -58,9 +57,12 @@ public class Connection {
         ConnectFuture connectFuture = null;
         if (handler == null){
             callMap = new ConcurrentHashMap<Long, BasicFuture>();
-            connectFuture = connector.connect(addr,new ClientBasicHandler(callMap),cfg);
+            ClientBasicHandler clientBasicHandler = new ClientBasicHandler(callMap);
+            clientBasicHandler.setClosed(closed);
+            connectFuture = connector.connect(addr,clientBasicHandler ,cfg);
         }else {
             callMap = handler.getCallMap();
+            handler.setClosed(closed);
             connectFuture = connector.connect(addr,handler,cfg);
         }
 
@@ -76,17 +78,12 @@ public class Connection {
     }
 
     public Future submitWithId(BasicFuture future, long id, IWritable... objs) {
-        callMaplock.readLock().lock();
-        try {
 
-            if (closed){
-                future.setDone(new ConnectionClosedException("connection closed in previous call"),null);
-                return future;
-            }else {
-                callMap.put(id,future);
-            }
-        }finally {
-            callMaplock.readLock().unlock();
+        if (!closed){
+            future.setDone(new ConnectionClosedException("connection closed in previous call"),null);
+            return future;
+        }else {
+            callMap.put(id,future);
         }
 
         DataPack pack = new DataPack();
@@ -110,20 +107,8 @@ public class Connection {
      * 关闭连接，这里会关闭请求队列，并且将队列中的所有请求失败.
      */
     public void close() {
-        callMaplock.writeLock().lock();
-        try {
-            Set<Long> keySet = callMap.keySet();
-            //将请求队列中的等待结果全部失效
-            for (Long key : keySet){
-                BasicFuture future = callMap.get(key);
-                future.setDone(new ConnectionClosedException("connection to " +session.getRemoteAddress() + " closed"),null);
-                //将这个future移除
-                callMap.remove(key);
-            }
-            this.closed = true;
-            session.close();
-        }finally {
-            callMaplock.writeLock().unlock();
-        }
+
+        this.closed = true;
+        session.close();
     }
 }
