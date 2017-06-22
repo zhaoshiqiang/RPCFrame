@@ -1,6 +1,8 @@
 package client;
 
+import commons.DataPack;
 import commons.WritableCodecFactory;
+import odis.serialize.IWritable;
 import org.apache.mina.common.*;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketConnector;
@@ -10,8 +12,13 @@ import toolbox.misc.UnitUtils;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,9 +27,12 @@ import java.util.logging.Logger;
  */
 public class Connection {
     private static final Logger LOGGER = LogFormatter.getLogger(Connection.class);
-    private ConcurrentHashMap<Long, BasicFuture> callMap;
+    private final ConcurrentHashMap<Long, BasicFuture> callMap;
     private IoSession session;
+    private AtomicLong reqId = new AtomicLong(0);
     private boolean closed;
+    private final ReadWriteLock callMaplock = new ReentrantReadWriteLock();
+
     Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, ClientBasicHandler handler){
         SocketConnector connector = new SocketConnector(1, new Executor() {
             @Override
@@ -60,11 +70,60 @@ public class Connection {
         this.closed = false;
     }
 
+    public Future submit(BasicFuture future, IWritable... objs){
+        long id = reqId.addAndGet(1);
+        return submitWithId(future, id, objs);
+    }
+
+    public Future submitWithId(BasicFuture future, long id, IWritable... objs) {
+        callMaplock.readLock().lock();
+        try {
+
+            if (closed){
+                future.setDone(new ConnectionClosedException("connection closed in previous call"),null);
+                return future;
+            }else {
+                callMap.put(id,future);
+            }
+        }finally {
+            callMaplock.readLock().unlock();
+        }
+
+        DataPack pack = new DataPack();
+        pack.setSeq(id);
+        for (IWritable obj : objs){
+            pack.add(obj);
+        }
+        session.write(pack);
+        return future;
+    }
+
     public IoSession getSession() {
         return session;
     }
 
     public Map<Long, BasicFuture> getCallMap() {
         return callMap;
+    }
+
+    /**
+     * 关闭连接，这里会关闭请求队列，并且将队列中的所有请求失败.
+     */
+    public void close() {
+        callMaplock.writeLock().lock();
+        try {
+            Set<Long> keySet = callMap.keySet();
+            //将请求队列中的等待结果全部失效
+            for (Long key : keySet){
+                BasicFuture future = callMap.get(key);
+                future.setDone(new ConnectionClosedException("connection to " +session.getRemoteAddress() + " closed"),null);
+                //将这个future移除
+                callMap.remove(key);
+            }
+            this.closed = true;
+            session.close();
+        }finally {
+            callMaplock.writeLock().unlock();
+        }
     }
 }

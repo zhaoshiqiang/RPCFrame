@@ -43,11 +43,11 @@ public class Client {
         }
         return connectionsManager.submit(listener,objs);
     }
-    public boolean open(){
+    public boolean open() throws CallException {
         return connectionsManager.open();
     }
 
-    public boolean close(){
+    public boolean close() throws CallException {
         return connectionsManager.close();
     }
 }

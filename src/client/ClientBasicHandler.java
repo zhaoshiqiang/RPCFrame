@@ -30,6 +30,7 @@ public class ClientBasicHandler extends IoHandlerAdapter {
         }
         IWritable obj = pack.getFirst();
         //这里还要判断是否有异常
+
         future.setDone(null,pack.getFirst());
     }
 
