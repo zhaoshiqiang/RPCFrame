@@ -3,7 +3,10 @@ package server;
 import org.apache.mina.common.IoSession;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 这个类会被多个线程调用，需要考虑并发
@@ -11,7 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Context extends HashMap {
     private final String name;
-    private ConcurrentHashMap<IoSession,Object> sessions = new ConcurrentHashMap<IoSession, Object>();
+    private HashSet<IoSession> sessions = new HashSet<IoSession>();
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public Context(String name) {
         this.name = name;
@@ -22,15 +26,32 @@ public class Context extends HashMap {
     }
 
     public int getSessionCount(){
-        return sessions.size();
+        lock.readLock().lock();
+        try {
+            return sessions.size();
+        }finally {
+            lock.readLock().unlock();
+        }
     }
 
     public void addSession(IoSession session){
-        sessions.put(session,null);
+
+        lock.writeLock().lock();
+        try {
+            sessions.add(session);
+        }finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public void removeSession(IoSession session){
-        sessions.remove(session);
+
+        lock.writeLock().lock();
+        try {
+            sessions.remove(session);
+        }finally {
+            lock.writeLock().unlock();
+        }
     }
 
 }
