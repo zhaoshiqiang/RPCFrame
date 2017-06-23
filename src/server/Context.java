@@ -9,6 +9,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
+ * 这里用HashSet<IoSession>而不用concurrentHashMap是
+ * 由于concurrentHashMap并发粒度小的原因，所以size方法返回的并不是concurrentHashMap的准确值。
+ * 关于concurrentHashMap还有一点需要注意的是其put方法的value也不能为null。
  * 这个类会被多个线程调用，需要考虑并发
  * Created by zhaoshiqiang on 2017/6/18.
  */
