@@ -79,7 +79,7 @@ public class Connection {
 
     public Future submitWithId(BasicFuture future, long id, IWritable... objs) {
 
-        if (!closed){
+        if (closed){
             future.setDone(new ConnectionClosedException("connection closed in previous call"),null);
             return future;
         }else {

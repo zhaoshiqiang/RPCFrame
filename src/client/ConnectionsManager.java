@@ -6,6 +6,7 @@ import toolbox.misc.UnitUtils;
 import toolbox.misc.concurrent.AtomicRotateInteger;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -34,7 +35,7 @@ public class ConnectionsManager {
 
     private final ICallFutureFactory callFutureFactory;
 
-    private List<Connection> connections;
+    private List<Connection> connections = new ArrayList<Connection>();
     private final ReadWriteLock connlock = new ReentrantReadWriteLock();
 
     private AtomicBoolean opened = new AtomicBoolean(false);

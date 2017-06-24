@@ -16,14 +16,14 @@ public class Client {
 
     private ConnectionsManager connectionsManager;
 
-    public static Client getNewInstance(InetSocketAddress addr){
-        return getNewInstance(1,DEFAULT_CONNECT_TIMEOUT,addr,DEFAULT_WRITE_TIMEOUT,null,CallFuture.DefaultCallFutureFactory.instance);
+    public static Client getNewInstance(InetSocketAddress addr,int connectionCount){
+        return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,null,CallFuture.DefaultCallFutureFactory.instance);
     }
 
     public static Client getNewInstance(InetSocketAddress addr,ICallFutureFactory callFutureFactory){
-        return getNewInstance(1,DEFAULT_CONNECT_TIMEOUT,addr,DEFAULT_WRITE_TIMEOUT,null,callFutureFactory);
+        return getNewInstance(addr,1,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,null,callFutureFactory);
     }
-    public static Client getNewInstance(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ClientBasicHandler handler,ICallFutureFactory callFutureFactory){
+    public static Client getNewInstance(InetSocketAddress addr,int connectionCount, long connectTimeout,  long writeTimeout, ClientBasicHandler handler,ICallFutureFactory callFutureFactory){
        return new Client(connectionCount, connectTimeout, addr, writeTimeout, handler,callFutureFactory);
     }
 
