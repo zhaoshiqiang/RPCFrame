@@ -1,5 +1,6 @@
 package server;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.mina.common.IoSession;
 
 import java.net.InetSocketAddress;
@@ -37,12 +38,12 @@ public class ContextManager {
     }
 
     public Context attachSession(String key, IoSession session){
-        Context oldContext = contexts.get(key);
+        Context oldContext = (Context) session.getAttribute(CONTEXT_NAME);
         if (oldContext != null){
             detachSession(session);
         }
         Context context = null;
-            if (key == null){
+            if (!StringUtils.isNotBlank(key)){
                 key = createContextKey(session);
             }else {
                 context = contexts.get(key);
@@ -83,6 +84,9 @@ public class ContextManager {
         return (Context) session.getAttribute(CONTEXT_NAME);
     }
 
+    public int getContextSize(){
+        return contexts.size();
+    }
     private String createContextKey(IoSession session){
         InetSocketAddress addr = (InetSocketAddress) session.getRemoteAddress();
         return addr.toString()+contextIdGenerator.addAndGet(1);
