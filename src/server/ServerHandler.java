@@ -2,6 +2,7 @@ package server;
 
 import commons.DataPack;
 import odis.serialize.lib.StringWritable;
+import org.apache.commons.lang.StringUtils;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
@@ -37,12 +38,12 @@ public class ServerHandler extends IoHandlerAdapter {
     public void messageReceived(IoSession session, Object message) throws Exception {
         DataPack pack = (DataPack) message;
         long seqId = pack.getSeq();
-        if (seqId != -1){
+        if (seqId == -1){
             //将session与context关联起来
             StringWritable keyWritable = (StringWritable) pack.getFirst();
             String key = keyWritable.get();
             Context context = null;
-            if (key != null){
+            if (StringUtils.isNotBlank(key)){
                 context = contextManager.attachSession(key,session);
             }else {
                 context = contextManager.attachSession(null,session);
@@ -61,5 +62,9 @@ public class ServerHandler extends IoHandlerAdapter {
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
         System.out.println("IDLE" + session.getIdleCount(status));
+    }
+    @Override
+    public void sessionClosed(IoSession session) throws Exception {
+        contextManager.detachSession(session);
     }
 }
