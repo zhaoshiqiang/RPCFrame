@@ -5,7 +5,6 @@ import odis.serialize.IWritable;
 import odis.serialize.lib.IntWritable;
 import server.Server;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Future;
 
@@ -14,7 +13,7 @@ import java.util.concurrent.Future;
  * <ul>
  * <li>同一个client的多连接共享context
  * <li>不同client使用不同的context
- * <li>context的创建和释放（之后会补上）
+ * <li>context的创建和释放
  * </ul>
  * Created by zhaoshiqiang on 2017/6/24.
  */
