@@ -47,6 +47,12 @@ public class Client {
         return connectionsManager.open();
     }
 
+    /**
+     * 客户端主动关闭连接，所有没有完成或者返回的请求都会失败。
+     * （还有一种是通过方法调用，在服务器端关闭连接）
+     * @return
+     * @throws CallException
+     */
     public boolean close() throws CallException {
         return connectionsManager.close();
     }
