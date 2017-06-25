@@ -24,7 +24,7 @@ public class Server {
 
     private final static int DEFAULT_IO_WORK_COUNT = 1;
 
-    private ContextManager contextManager = new ContextManager();
+    private ContextManager contextManager;
     private int port;
     private int processorNumber;
     private int ioWorkerNumber;
@@ -33,6 +33,7 @@ public class Server {
     private IRequestHandler requestHandler;
     private int mixQueueSize;
     private BlockingQueue<Runnable> requestQueue;
+    private boolean verbose = false;
 
     public Server(int port,Object instance) throws IOException {
         IoAcceptor acceptor = new SocketAcceptor();
@@ -51,11 +52,17 @@ public class Server {
         IoAcceptor acceptor = new SocketAcceptor();
         IoAcceptorConfig config = new SocketAcceptorConfig();
         DefaultIoFilterChainBuilder chain = config.getFilterChain();
-        chain.addLast("logger",new LoggingFilter());
+        if (verbose){
+            chain.addLast("logger",new LoggingFilter());
+        }
         chain.addLast("codec",new ProtocolCodecFilter(new WritableCodecFactory()));
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(1,1,0l, TimeUnit.MILLISECONDS,new ArrayBlockingQueue<Runnable>(1));
-
+        if (handler instanceof IContextListener){
+            contextManager = new ContextManager((IContextListener) handler);
+        }else {
+            contextManager = new ContextManager();
+        }
         ServerHandler serverHandler = new ServerHandler(executor,handler,contextManager);
         acceptor.bind(new InetSocketAddress(port), serverHandler,config);
     }
@@ -68,6 +75,10 @@ public class Server {
     }
     public void join(){
 
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     public ContextManager getContextManager() {
