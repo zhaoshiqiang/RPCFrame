@@ -89,7 +89,7 @@ public class ContextManager {
     }
     private String createContextKey(IoSession session){
         InetSocketAddress addr = (InetSocketAddress) session.getRemoteAddress();
-        return addr.toString()+contextIdGenerator.addAndGet(1);
+        return addr.toString() + "_" + contextIdGenerator.addAndGet(1);
     }
 
 }
