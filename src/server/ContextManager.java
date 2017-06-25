@@ -43,19 +43,22 @@ public class ContextManager {
             detachSession(session);
         }
         Context context = null;
-            if (!StringUtils.isNotBlank(key)){
-                key = createContextKey(session);
-            }else {
-                context = contexts.get(key);
-            }
-            if (context == null){
-                context = new Context(key);
-                contexts.put(key,context);
-            }
-            //将context和session关联起来
-            context.addSession(session);
-            session.setAttribute(CONTEXT_NAME,context);
-        if (contextListener != null){
+        boolean contextCreateFlag = false;
+        if (!StringUtils.isNotBlank(key)){
+            key = createContextKey(session);
+        }else {
+            context = contexts.get(key);
+        }
+        if (context == null){
+            contextCreateFlag = true;
+            context = new Context(key);
+            contexts.put(key,context);
+        }
+        //将context和session关联起来
+        context.addSession(session);
+        session.setAttribute(CONTEXT_NAME,context);
+
+        if (contextListener != null && contextCreateFlag){
             contextListener.onContextCreate(context);
         }
         return context;
