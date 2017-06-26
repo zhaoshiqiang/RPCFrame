@@ -7,6 +7,7 @@ import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 import toolbox.misc.LogFormatter;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -18,25 +19,16 @@ import java.util.logging.Logger;
 public class ClientBasicHandler extends IoHandlerAdapter {
 
     public static final Logger LOG = LogFormatter.getLogger(Connection.class);
-    private final ConcurrentHashMap<Long, BasicFuture> callMap;
-    private Boolean closed;
+    private Connection connection;
 
-    public ClientBasicHandler(ConcurrentHashMap<Long, BasicFuture> callMap) {
-        this.callMap = callMap;
-    }
-
-    public Boolean getClosed() {
-        return closed;
-    }
-
-    public void setClosed(Boolean closed) {
-        this.closed = closed;
+    public void setConnection(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
         DataPack pack = (DataPack) message;
-        BasicFuture future = callMap.remove(pack.getSeq());
+        BasicFuture future = connection.getCallMap().remove(pack.getSeq());
         if (future == null){
             LOG.log(Level.WARNING,"connot find request for response with id" + pack.getSeq());
             return;
@@ -58,18 +50,25 @@ public class ClientBasicHandler extends IoHandlerAdapter {
     @Override
     public void sessionClosed(IoSession session) throws Exception {
 
-        Set<Long> keySet = callMap.keySet();
-        //将请求队列中的等待结果全部失效
-        for (Long key : keySet){
-            BasicFuture future = callMap.get(key);
-            future.setDone(new ConnectionClosedException("connection to " +session.getRemoteAddress() + " closed"),null);
-            //将这个future移除
-            callMap.remove(key);
+        Map<Long, BasicFuture> callMap = connection.getCallMap();
+        synchronized (callMap){
+            Set<Long> keySet = callMap.keySet();
+            //将请求队列中的等待结果全部失效
+            for (Long key : keySet){
+                BasicFuture future = callMap.get(key);
+                future.setDone(new ConnectionClosedException("connection to " +session.getRemoteAddress() + " callMapclosed"),null);
+                //将这个future移除
+                callMap.remove(key);
+            }
         }
-        closed = true;
+        /**
+         * 连接关闭后才会调用{@link #sessionClosed(IoSession)}，
+         * 而连接关闭的方式除了客户端调用{@link Client#close()}}外，
+         * 还可以通过方法调用使客户端主动关闭连接，而此时，closed这个状态是为true的
+         */
+        if (connection.getClosed()){
+            connection.close();
+        }
     }
 
-    public ConcurrentHashMap<Long, BasicFuture> getCallMap() {
-        return callMap;
-    }
 }

@@ -1,5 +1,6 @@
 package server;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.mina.common.IoSession;
 
 import java.net.InetSocketAddress;
@@ -37,24 +38,27 @@ public class ContextManager {
     }
 
     public Context attachSession(String key, IoSession session){
-        Context oldContext = contexts.get(key);
+        Context oldContext = (Context) session.getAttribute(CONTEXT_NAME);
         if (oldContext != null){
             detachSession(session);
         }
         Context context = null;
-            if (key == null){
-                key = createContextKey(session);
-            }else {
-                context = contexts.get(key);
-            }
-            if (context == null){
-                context = new Context(key);
-                contexts.put(key,context);
-            }
-            //将context和session关联起来
-            context.addSession(session);
-            session.setAttribute(CONTEXT_NAME,context);
-        if (contextListener != null){
+        boolean contextCreateFlag = false;
+        if (!StringUtils.isNotBlank(key)){
+            key = createContextKey(session);
+        }else {
+            context = contexts.get(key);
+        }
+        if (context == null){
+            contextCreateFlag = true;
+            context = new Context(key);
+            contexts.put(key,context);
+        }
+        //将context和session关联起来
+        context.addSession(session);
+        session.setAttribute(CONTEXT_NAME,context);
+
+        if (contextListener != null && contextCreateFlag){
             contextListener.onContextCreate(context);
         }
         return context;
@@ -83,9 +87,12 @@ public class ContextManager {
         return (Context) session.getAttribute(CONTEXT_NAME);
     }
 
+    public int getContextSize(){
+        return contexts.size();
+    }
     private String createContextKey(IoSession session){
         InetSocketAddress addr = (InetSocketAddress) session.getRemoteAddress();
-        return addr.toString()+contextIdGenerator.addAndGet(1);
+        return addr.toString() + "_" + contextIdGenerator.addAndGet(1);
     }
 
 }

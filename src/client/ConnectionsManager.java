@@ -6,6 +6,7 @@ import toolbox.misc.UnitUtils;
 import toolbox.misc.concurrent.AtomicRotateInteger;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -16,6 +17,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
+ * 这个类会被多个线程调用，需要考虑并发
  * Created by zhaoshq on 2017/6/21.
  */
 public class ConnectionsManager {
@@ -34,7 +36,7 @@ public class ConnectionsManager {
 
     private final ICallFutureFactory callFutureFactory;
 
-    private List<Connection> connections;
+    private List<Connection> connections = new ArrayList<Connection>();
     private final ReadWriteLock connlock = new ReentrantReadWriteLock();
 
     private AtomicBoolean opened = new AtomicBoolean(false);
@@ -116,12 +118,11 @@ public class ConnectionsManager {
     }
 
     /**
-     * 关闭所有的连接，所有没有完成或者返回的请求都会失败.
+     * 关闭所有的连接，所有没有完成或者返回的请求都会失败。
      */
     public boolean close() throws CallException {
         connlock.writeLock().lock();
         try {
-
             if (!opened.get()){
                 throw new CallException("client to " + addr + " is closed previously");
             }
@@ -129,6 +130,7 @@ public class ConnectionsManager {
                 connection.close();
             }
             connections.clear();
+            opened.set(false);
         }finally {
             connlock.writeLock().unlock();
         }

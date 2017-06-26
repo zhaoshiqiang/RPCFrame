@@ -16,14 +16,14 @@ public class Client {
 
     private ConnectionsManager connectionsManager;
 
-    public static Client getNewInstance(InetSocketAddress addr){
-        return getNewInstance(1,DEFAULT_CONNECT_TIMEOUT,addr,DEFAULT_WRITE_TIMEOUT,null,CallFuture.DefaultCallFutureFactory.instance);
+    public static Client getNewInstance(InetSocketAddress addr,int connectionCount){
+        return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,null,CallFuture.DefaultCallFutureFactory.instance);
     }
 
     public static Client getNewInstance(InetSocketAddress addr,ICallFutureFactory callFutureFactory){
-        return getNewInstance(1,DEFAULT_CONNECT_TIMEOUT,addr,DEFAULT_WRITE_TIMEOUT,null,callFutureFactory);
+        return getNewInstance(addr,1,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,null,callFutureFactory);
     }
-    public static Client getNewInstance(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ClientBasicHandler handler,ICallFutureFactory callFutureFactory){
+    public static Client getNewInstance(InetSocketAddress addr,int connectionCount, long connectTimeout,  long writeTimeout, ClientBasicHandler handler,ICallFutureFactory callFutureFactory){
        return new Client(connectionCount, connectTimeout, addr, writeTimeout, handler,callFutureFactory);
     }
 
@@ -47,6 +47,12 @@ public class Client {
         return connectionsManager.open();
     }
 
+    /**
+     * 客户端主动关闭连接，所有没有完成或者返回的请求都会失败。
+     * （还有一种是通过方法调用，在服务器端关闭连接）
+     * @return
+     * @throws CallException
+     */
     public boolean close() throws CallException {
         return connectionsManager.close();
     }
