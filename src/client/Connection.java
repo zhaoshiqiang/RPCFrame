@@ -93,7 +93,12 @@ public class Connection {
         for (IWritable obj : objs){
             pack.add(obj);
         }
-        session.write(pack);
+
+        try {
+            session.write(pack);
+        }catch (Throwable e){
+            future.setDone(new CallException("request not submitted for unexpected exception", e), null);
+        }
         return future;
     }
 

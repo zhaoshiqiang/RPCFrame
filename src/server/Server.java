@@ -15,7 +15,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by zhaoshiqiang on 2017/6/6.
@@ -29,14 +28,26 @@ public class Server {
     private int processorNumber;
     private int ioWorkerNumber;
     private IoAcceptor acceptor;
-    private AtomicBoolean terminated;
+    private volatile boolean terminated;
     private IRequestHandler requestHandler;
-    private int mixQueueSize;
+    private int maxQueueSize;
     private BlockingQueue<Runnable> requestQueue;
     private boolean verbose = false;
 
+    public Server(int port, //服务端口
+                  int ioWorkerNumber, //IO线程数
+                  int processorNumber, //工作线程数
+                  IRequestHandler handler,  //请求处理逻辑类
+                  int maxQueueSize //服务可接受请求最大等待数目
+    ){
+        this.port = port;
+        this.ioWorkerNumber = ioWorkerNumber;
+        this.processorNumber = processorNumber;
+        this.maxQueueSize = maxQueueSize;
+    }
+
     public Server(int port,Object instance) throws IOException {
-        IoAcceptor acceptor = new SocketAcceptor();
+        acceptor = new SocketAcceptor();
         IoAcceptorConfig config = new SocketAcceptorConfig();
         DefaultIoFilterChainBuilder chain = config.getFilterChain();
         chain.addLast("logger",new LoggingFilter());
@@ -49,7 +60,7 @@ public class Server {
     }
 
     public Server(int port,IRequestHandler handler) throws IOException {
-        IoAcceptor acceptor = new SocketAcceptor();
+        acceptor = new SocketAcceptor();
         IoAcceptorConfig config = new SocketAcceptorConfig();
         DefaultIoFilterChainBuilder chain = config.getFilterChain();
         if (verbose){
@@ -68,13 +79,23 @@ public class Server {
     }
 
     public void start(){
-
+        terminated = false;
     }
     public void stop(){
-
+        //取消所有监听
+        acceptor.unbindAll();
+        //关闭
+        synchronized (this){
+            terminated = true;
+            this.notifyAll();
+        }
     }
-    public void join(){
-
+    public void join() throws InterruptedException {
+        synchronized (this){
+            while (!terminated){
+                this.wait();
+            }
+        }
     }
 
     public void setVerbose(boolean verbose) {
