@@ -23,18 +23,16 @@ public class ContextManager {
 
     private static final String CONTEXT_NAME = "__context_";
 
-    private ConcurrentHashMap<String,Context> contexts ;
+    private final ConcurrentHashMap<String,Context> contexts =new ConcurrentHashMap<String,Context>();
 
     private AtomicLong contextIdGenerator = new AtomicLong(0);
 
     public ContextManager(IContextListener contextListener) {
         this.contextListener = contextListener;
-        this.contexts = new ConcurrentHashMap<String,Context>();
     }
 
     public ContextManager(){
         contextListener = null;
-        this.contexts = new ConcurrentHashMap<String,Context>();
     }
 
     public Context attachSession(String key, IoSession session){

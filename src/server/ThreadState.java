@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ThreadState {
 
-    private static ConcurrentHashMap<Thread,State> currentState = new ConcurrentHashMap<Thread,State>();
+    private static final ConcurrentHashMap<Thread,State> currentState = new ConcurrentHashMap<Thread,State>();
 
     /**
      * 设置当前线程的context和session.
