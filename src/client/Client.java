@@ -38,18 +38,22 @@ public class Client {
      * @return
      */
     public Future submit(ICallFinishListener listener,IWritable... objs){
+        //如果连接是关闭的，则直接返回
         if (!connectionsManager.getOpenedState()) {
             return null;
         }
         return connectionsManager.submit(listener,objs);
     }
+
     public boolean open() throws CallException {
         return connectionsManager.open();
     }
 
+    public boolean isOpened(){
+        return connectionsManager.getOpenedState();
+    }
     /**
      * 客户端主动关闭连接，所有没有完成或者返回的请求都会失败。
-     * （还有一种是通过方法调用，在服务器端关闭连接）
      * @return
      * @throws CallException
      */
