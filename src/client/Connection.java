@@ -25,13 +25,27 @@ import java.util.logging.Logger;
  */
 public class Connection {
     private static final Logger LOGGER = LogFormatter.getLogger(Connection.class);
+
+    private final InetSocketAddress addr;
+    private ClientBasicHandler handler;
+    private final long connectTimeout;
+    private final long writeTimeout;
+
     private final ConcurrentHashMap<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
     private IoSession session;
     private AtomicLong reqId = new AtomicLong(0);
-    private volatile Boolean closed = false;
+    private volatile Boolean closed;
 
     //这里要改一下，最好不要在构造函数中启动线程，或者调用可改写的实例方法，否则会使this对象溢出
     Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, ClientBasicHandler handler){
+        this.addr = addr;
+        this.connectTimeout = connectTimeout;
+        this.writeTimeout = writeTimeout;
+        this.handler = handler;
+    }
+
+    public void open(){
+
         SocketConnector connector = new SocketConnector(1, new Executor() {
             @Override
             public void execute(Runnable command) {
@@ -62,13 +76,13 @@ public class Connection {
             handler.setConnection(this);
             connectFuture = connector.connect(addr,handler,cfg);
         }
-
+        //等待子线程执行完毕之后再执行，将异步执行的线程合并为同步
         connectFuture.join();
+
         this.session = connectFuture.getSession();
         this.session.setWriteTimeout((int) (writeTimeout/UnitUtils.SECOND));
         this.closed = false;
     }
-
     public Future submit(BasicFuture future, IWritable... objs){
         long id = reqId.addAndGet(1);
         return submitWithId(future, id, objs);

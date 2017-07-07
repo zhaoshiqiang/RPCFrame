@@ -95,9 +95,10 @@ public class ConnectionsManager {
             try {
 
                 for (int i=0; i < connectionCount ; i++){
-                    Connection con = new Connection(addr,connectTimeout,writeTimeout,handler);
-                    connections.add(con);
-                    bindConnection(con);
+                    Connection conn = new Connection(addr,connectTimeout,writeTimeout,handler);
+                    conn.open();
+                    connections.add(conn);
+                    bindConnection(conn);
                 }
                 opened.set(true);
             }finally {
