@@ -22,6 +22,14 @@ public class RequestTask implements Runnable{
         this.context = context;
     }
 
+    public IoSession getSession() {
+        return session;
+    }
+
+    public DataPack getPack() {
+        return pack;
+    }
+
     @Override
     public void run() {
 
