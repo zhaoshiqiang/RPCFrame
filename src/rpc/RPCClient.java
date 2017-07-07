@@ -52,8 +52,10 @@ import java.util.concurrent.TimeoutException;
  * </code>
  * Created by zhaoshiqiang on 2017/6/1.
  */
-public class RPCClient {
+public class RPCClient<T> {
 
+    protected InetSocketAddress addr;
+    protected Class<T> cls;
     protected Client client;
     protected long callTimeout = 0;
     protected TimeUnit callTimeUnit;
@@ -69,16 +71,30 @@ public class RPCClient {
         this.callTimeUnit = unit;
     }
 
-    public <T> T getProxy(Class<T> cls){
-        return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls},new invokeProxy());
-    }
-
-    public  <T> T getProxy(InetSocketAddress addr, Class<T> cls) {
+    public RPCClient(InetSocketAddress addr, Class<T> cls) {
+        this.addr = addr;
+        this.cls = cls;
         this.client = Client.getNewInstance(addr,RPCInvokeFuture.RPCInvokeFutureFactory.instance);
-
-        return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls},new invokeProxy());
     }
 
+    public  <T> T getProxy() {
+        return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls,IRPCClientCommon.class},new invokeProxy());
+    }
+
+    /**
+     * 返回连接是否已经被打开.
+     * @return
+     */
+    public boolean isOpened() {
+        return client.isOpened();
+    }
+
+    /**
+     * 关闭连接.
+     */
+    public void close() throws CallException {
+        client.close();
+    }
 
     /**
      * 对于proxy对象的方法调用，这是一个同步的方法，这里可以对函数进行拦截等操作
@@ -88,6 +104,18 @@ public class RPCClient {
      * @return
      */
     protected Object invokeProxyMethod(Object proxy,Method method, Object[] args) throws Throwable {
+
+        //检查是不是调用RPCClient内部的关闭方法
+        String methodName = method.getName();
+        if (methodName.startsWith("__")){
+
+            if ( method.getName().equals(IRPCClientCommon.CLOSE_METHOD_NAME)){
+                close();
+                return null;
+            }else {
+                throw new RuntimeException("bad internal method : " + methodName);
+            }
+        }
 
         Future future = invoke(method,args);
 
@@ -192,5 +220,16 @@ public class RPCClient {
                 return new RPCInvokeFuture(listener);
             }
         }
+    }
+
+    /**
+     * 在通过{@link #getProxy()}生成rpc proxy对象的时候，
+     * 每个rpc proxy对象实际还实现了{@link IRPCClientCommon}的接口.
+     * 这样便可以通过rpc proxy对象释放底层的连接。
+     * 使用方式为((RPCClient.IRPCClientCommon)proxyInstance).__close();
+     */
+    public interface IRPCClientCommon{
+        String CLOSE_METHOD_NAME = "__close";
+        void __close();
     }
 }
