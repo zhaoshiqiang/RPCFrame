@@ -21,6 +21,11 @@ public class ClientHandler extends IoHandlerAdapter {
 
     public static final Logger LOG = LogFormatter.getLogger(Connection.class);
     private Connection connection;
+    private final IHandlerListener handlerListener;
+
+    public ClientHandler(IHandlerListener handlerListener) {
+        this.handlerListener = handlerListener;
+    }
 
     public void setConnection(Connection connection) {
         this.connection = connection;
@@ -37,8 +42,10 @@ public class ClientHandler extends IoHandlerAdapter {
         IWritable obj = pack.getFirst();
         //这里还要判断是否有异常
         if (obj instanceof ExceptionWritable){
+            handlerListener.messageReceived(((ExceptionWritable) obj).get(),null);
             future.setDone(((ExceptionWritable) obj).get(),null);
         }else {
+            handlerListener.messageReceived(null,obj);
             future.setDone(null,obj);
         }
     }
@@ -46,6 +53,7 @@ public class ClientHandler extends IoHandlerAdapter {
     @Override
     public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
         super.exceptionCaught(session, cause);
+        handlerListener.exceptionCaught(cause);
     }
 
     @Override
@@ -70,6 +78,7 @@ public class ClientHandler extends IoHandlerAdapter {
         if (connection.getClosed()){
             connection.close();
         }
+        handlerListener.sessionClosed();
     }
 
 }

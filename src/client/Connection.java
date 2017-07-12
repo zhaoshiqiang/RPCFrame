@@ -41,7 +41,7 @@ public class Connection {
         this.writeTimeout = writeTimeout;
     }
 
-    public void open(){
+    public void open(IHandlerListener handlerListener){
 
         SocketConnector connector = new SocketConnector(1, new Executor() {
             @Override
@@ -66,7 +66,7 @@ public class Connection {
         cfg.setThreadModel(ThreadModel.MANUAL);
         ConnectFuture connectFuture = null;
         //新建一个handler与此connecttion对应
-        ClientHandler clientHandler = new ClientHandler();
+        ClientHandler clientHandler = new ClientHandler(handlerListener);
         clientHandler.setConnection(this);
         connectFuture = connector.connect(addr, clientHandler,cfg);
         //等待子线程执行完毕之后再执行，将异步执行的线程合并为同步

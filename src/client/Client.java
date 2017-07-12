@@ -1,6 +1,7 @@
 package client;
 
 import odis.serialize.IWritable;
+import org.apache.mina.common.IdleStatus;
 import toolbox.misc.UnitUtils;
 
 import java.net.InetSocketAddress;
@@ -9,12 +10,13 @@ import java.util.concurrent.Future;
 /**
  * Created by zhaoshiqiang on 2017/6/1.
  */
-public class Client {
+public class Client implements IHandlerListener {
 
     public static final long DEFAULT_WRITE_TIMEOUT = 10 * UnitUtils.SECOND;
     public static final long DEFAULT_CONNECT_TIMEOUT = 10 * UnitUtils.SECOND;
 
     protected ConnectionsManager connectionsManager;
+    protected IHandlerListener handlerListener;
 
     public static Client getNewInstance(InetSocketAddress addr,int connectionCount){
         return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,CallFuture.DefaultCallFutureFactory.instance);
@@ -46,7 +48,7 @@ public class Client {
     }
 
     public boolean open() throws CallException {
-        return connectionsManager.open();
+        return connectionsManager.open(new HandlerListener(this));
     }
 
     public boolean isOpened(){
@@ -59,5 +61,40 @@ public class Client {
      */
     public boolean close() throws CallException {
         return connectionsManager.close();
+    }
+
+    @Override
+    public void sessionCreated() throws Exception {
+
+    }
+
+    @Override
+    public void sessionOpened() throws Exception {
+
+    }
+
+    @Override
+    public void sessionClosed() throws Exception {
+
+    }
+
+    @Override
+    public void sessionIdle(IdleStatus var1) throws Exception {
+
+    }
+
+    @Override
+    public void exceptionCaught(Throwable var1) throws Exception {
+
+    }
+
+    @Override
+    public void messageReceived(Throwable var1, Object var2) throws Exception {
+
+    }
+
+    @Override
+    public void messageSent(Object var1) throws Exception {
+
     }
 }

@@ -81,7 +81,7 @@ public class ConnectionsManager {
      *
      * @throws CallException
      */
-    public boolean open() throws CallException {
+    public boolean open(IHandlerListener handlerListener) throws CallException {
         //不能并发读，也不能并发写
         connlock.writeLock().lock();
         try {
@@ -93,7 +93,7 @@ public class ConnectionsManager {
 
                 for (int i=0; i < connectionCount ; i++){
                     Connection conn = new Connection(addr,connectTimeout,writeTimeout);
-                    conn.open();
+                    conn.open(handlerListener);
                     connections.add(conn);
                     bindConnection(conn);
                 }
