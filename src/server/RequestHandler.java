@@ -25,7 +25,6 @@ public class RequestHandler implements IRequestHandler {
     public IWritable process(List<IWritable> inputList, IoSession session,Context context) throws Throwable {
         Iterator<IWritable> it = inputList.iterator();
         String methodName = ((StringWritable)it.next()).get();
-//        System.out.println(methodName);
 
         Object[] params = new Object[inputList.size() - 1];
         Class<?>[] paramTypes = new Class<?>[inputList.size() - 1];
