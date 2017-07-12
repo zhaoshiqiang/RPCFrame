@@ -3,6 +3,7 @@ package client;
 import org.apache.mina.common.IdleStatus;
 
 /**
+ * 这个类要被多线程调用，需要考虑并发
  * Created by zhaoshiqiang on 2017/7/12.
  */
 public class HandlerListener implements IHandlerListener {
