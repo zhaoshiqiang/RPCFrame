@@ -14,7 +14,7 @@ public class RPCFrameTestClient {
     public static void main(String[] args) throws UnknownHostException, ExecutionException, InterruptedException {
 
         InetSocketAddress addr = new InetSocketAddress("localhost", 8080);
-        IHello hello = new RPCClient().getProxy(addr, IHello.class);
+        IHello hello = new RPCClient<IHello>(addr, IHello.class).getProxy();
         Object result = hello.hello("zhaoshiqiang",1);
         System.out.println(result);
         System.out.println(hello.hello());
