@@ -36,7 +36,6 @@ public class Connection {
     private AtomicLong reqId = new AtomicLong(0);
     private volatile Boolean closed;
 
-    //这里要改一下，最好不要在构造函数中启动线程，或者调用可改写的实例方法，否则会使this对象溢出
     Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, ClientBasicHandler handler){
         this.addr = addr;
         this.connectTimeout = connectTimeout;
