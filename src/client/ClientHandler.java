@@ -13,9 +13,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * 这个类与{@link Connection}是一对一的关系，
+ * 每次生成一个{@link Connection}时便要new一个{@link ClientHandler}与之对应
  * Created by zhaoshq on 2017/6/1.
  */
-public class ClientBasicHandler extends IoHandlerAdapter {
+public class ClientHandler extends IoHandlerAdapter {
 
     public static final Logger LOG = LogFormatter.getLogger(Connection.class);
     private Connection connection;

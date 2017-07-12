@@ -27,7 +27,6 @@ public class Connection {
     private static final Logger LOGGER = LogFormatter.getLogger(Connection.class);
 
     private final InetSocketAddress addr;
-    private ClientBasicHandler handler;
     private final long connectTimeout;
     private final long writeTimeout;
 
@@ -36,11 +35,10 @@ public class Connection {
     private AtomicLong reqId = new AtomicLong(0);
     private volatile Boolean closed;
 
-    Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout, ClientBasicHandler handler){
+    Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout){
         this.addr = addr;
         this.connectTimeout = connectTimeout;
         this.writeTimeout = writeTimeout;
-        this.handler = handler;
     }
 
     public void open(){
@@ -67,14 +65,10 @@ public class Connection {
         //ThreadModel的作用其实就是在处理链的最后（handler之前）添加一个ExecutorFilter过滤器。
         cfg.setThreadModel(ThreadModel.MANUAL);
         ConnectFuture connectFuture = null;
-        if (handler == null){
-            ClientBasicHandler clientBasicHandler = new ClientBasicHandler();
-            clientBasicHandler.setConnection(this);
-            connectFuture = connector.connect(addr,clientBasicHandler ,cfg);
-        }else {
-            handler.setConnection(this);
-            connectFuture = connector.connect(addr,handler,cfg);
-        }
+        //新建一个handler与此connecttion对应
+        ClientHandler clientHandler = new ClientHandler();
+        clientHandler.setConnection(this);
+        connectFuture = connector.connect(addr, clientHandler,cfg);
         //等待子线程执行完毕之后再执行，将异步执行的线程合并为同步
         connectFuture.join();
 

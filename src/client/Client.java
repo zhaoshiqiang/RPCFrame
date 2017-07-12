@@ -14,21 +14,21 @@ public class Client {
     public static final long DEFAULT_WRITE_TIMEOUT = 10 * UnitUtils.SECOND;
     public static final long DEFAULT_CONNECT_TIMEOUT = 10 * UnitUtils.SECOND;
 
-    private ConnectionsManager connectionsManager;
+    protected ConnectionsManager connectionsManager;
 
     public static Client getNewInstance(InetSocketAddress addr,int connectionCount){
-        return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,null,CallFuture.DefaultCallFutureFactory.instance);
+        return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,CallFuture.DefaultCallFutureFactory.instance);
     }
 
     public static Client getNewInstance(InetSocketAddress addr,ICallFutureFactory callFutureFactory){
-        return getNewInstance(addr,1,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,null,callFutureFactory);
+        return getNewInstance(addr,1,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,callFutureFactory);
     }
-    public static Client getNewInstance(InetSocketAddress addr,int connectionCount, long connectTimeout,  long writeTimeout, ClientBasicHandler handler,ICallFutureFactory callFutureFactory){
-       return new Client(connectionCount, connectTimeout, addr, writeTimeout, handler,callFutureFactory);
+    public static Client getNewInstance(InetSocketAddress addr, int connectionCount, long connectTimeout, long writeTimeout, ICallFutureFactory callFutureFactory){
+       return new Client(connectionCount, connectTimeout, addr, writeTimeout,callFutureFactory);
     }
 
-    private Client(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ClientBasicHandler handler,ICallFutureFactory callFutureFactory){
-        connectionsManager = ConnectionsManager.getNewInstance(connectionCount, connectTimeout, addr, writeTimeout, handler,callFutureFactory);
+    protected Client(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ICallFutureFactory callFutureFactory){
+        connectionsManager = ConnectionsManager.getNewInstance(connectionCount, connectTimeout, addr, writeTimeout,callFutureFactory);
     }
 
     /**

@@ -32,8 +32,6 @@ public class ConnectionsManager {
 
     private final InetSocketAddress addr;
 
-    private final ClientBasicHandler handler;
-
     private final ICallFutureFactory callFutureFactory;
 
     private List<Connection> connections = new ArrayList<Connection>();
@@ -42,16 +40,15 @@ public class ConnectionsManager {
     private AtomicBoolean opened = new AtomicBoolean(false);
     private String ctxKey = null;
 
-    public static ConnectionsManager getNewInstance(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ClientBasicHandler handler,ICallFutureFactory callFutureFactory){
-        return new ConnectionsManager(connectionCount,connectTimeout,addr,writeTimeout,handler, callFutureFactory);
+    public static ConnectionsManager getNewInstance(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout,ICallFutureFactory callFutureFactory){
+        return new ConnectionsManager(connectionCount,connectTimeout,addr,writeTimeout, callFutureFactory);
     }
 
-    private ConnectionsManager(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ClientBasicHandler handler, ICallFutureFactory callFutureFactory) {
+    private ConnectionsManager(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ICallFutureFactory callFutureFactory) {
         this.connectionCount = connectionCount;
         this.connectTimeout = connectTimeout;
         this.addr = addr;
         this.writeTimeout = writeTimeout;
-        this.handler = handler;
         nextConnection = new AtomicRotateInteger(0,connectionCount,0);
         this.callFutureFactory = callFutureFactory;
     }
@@ -95,7 +92,7 @@ public class ConnectionsManager {
             try {
 
                 for (int i=0; i < connectionCount ; i++){
-                    Connection conn = new Connection(addr,connectTimeout,writeTimeout,handler);
+                    Connection conn = new Connection(addr,connectTimeout,writeTimeout);
                     conn.open();
                     connections.add(conn);
                     bindConnection(conn);
