@@ -10,13 +10,12 @@ import java.util.concurrent.Future;
 /**
  * Created by zhaoshiqiang on 2017/6/1.
  */
-public class Client implements IHandlerListener {
+public class Client {
 
     public static final long DEFAULT_WRITE_TIMEOUT = 10 * UnitUtils.SECOND;
     public static final long DEFAULT_CONNECT_TIMEOUT = 10 * UnitUtils.SECOND;
 
     protected ConnectionsManager connectionsManager;
-    protected IHandlerListener handlerListener;
 
     public static Client getNewInstance(InetSocketAddress addr,int connectionCount){
         return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,CallFuture.DefaultCallFutureFactory.instance);
@@ -50,7 +49,6 @@ public class Client implements IHandlerListener {
     public boolean open() throws CallException {
         return connectionsManager.open(new HandlerListener(this));
     }
-
     public boolean isOpened(){
         return connectionsManager.getOpenedState();
     }
@@ -63,38 +61,13 @@ public class Client implements IHandlerListener {
         return connectionsManager.close();
     }
 
-    @Override
-    public void sessionCreated() throws Exception {
-
-    }
-
-    @Override
-    public void sessionOpened() throws Exception {
-
-    }
-
-    @Override
-    public void sessionClosed() throws Exception {
-
-    }
-
-    @Override
-    public void sessionIdle(IdleStatus var1) throws Exception {
-
-    }
-
-    @Override
-    public void exceptionCaught(Throwable var1) throws Exception {
-
-    }
-
-    @Override
-    public void messageReceived(Throwable var1, Object var2) throws Exception {
-
-    }
-
-    @Override
-    public void messageSent(Object var1) throws Exception {
-
+    /**
+     * 当Client中的任意一个connection遇到异常exception的时候，会回调这个方法，让client 统一处理异常.
+     * client对于异常的处理办法是断开所有的到服务器的连接。
+     *
+     * @param e
+     */
+    void onConnectionException(Throwable e) throws CallException {
+        close();
     }
 }

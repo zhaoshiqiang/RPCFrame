@@ -7,6 +7,7 @@ import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 import toolbox.misc.LogFormatter;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -75,8 +76,8 @@ public class ClientHandler extends IoHandlerAdapter {
          * 而连接关闭的方式除了客户端调用{@link Client#close()}}外，
          * 还可以通过方法调用使客户端主动关闭连接，而此时，closed这个状态是为true的
          */
-        if (connection.getClosed()){
-            connection.close();
+        if (!connection.getClosed()){
+            handlerListener.exceptionCaught(new IOException("Connection to " + session.getRemoteAddress() + " reset by peer"));
         }
         handlerListener.sessionClosed();
     }

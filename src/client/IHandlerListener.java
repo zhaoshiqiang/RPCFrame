@@ -14,7 +14,6 @@ public interface IHandlerListener {
 
     void sessionClosed() throws Exception;
 
-    void sessionIdle(IdleStatus var1) throws Exception;
 
     void exceptionCaught(Throwable var1) throws Exception;
 

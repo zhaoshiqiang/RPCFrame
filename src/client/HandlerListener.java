@@ -1,7 +1,5 @@
 package client;
 
-import org.apache.mina.common.IdleStatus;
-
 /**
  * 这个类要被多线程调用，需要考虑并发
  * Created by zhaoshiqiang on 2017/7/12.
@@ -16,36 +14,33 @@ public class HandlerListener implements IHandlerListener {
 
     @Override
     public void sessionCreated() throws Exception {
-        client.sessionCreated();
+
     }
 
     @Override
     public void sessionOpened() throws Exception {
-        client.sessionOpened();
+
     }
 
     @Override
     public void sessionClosed() throws Exception {
-        client.sessionClosed();
+
+    }
+
+
+    @Override
+    public void exceptionCaught(Throwable cause) throws Exception {
+        client.onConnectionException(cause);
+
     }
 
     @Override
-    public void sessionIdle(IdleStatus var1) throws Exception {
-        client.sessionIdle(var1);
+    public void messageReceived(Throwable cause, Object o) throws Exception {
+
     }
 
     @Override
-    public void exceptionCaught(Throwable var1) throws Exception {
-        client.exceptionCaught(var1);
-    }
+    public void messageSent(Object o) throws Exception {
 
-    @Override
-    public void messageReceived(Throwable var1, Object var2) throws Exception {
-        client.messageReceived(var1,var2);
-    }
-
-    @Override
-    public void messageSent(Object var1) throws Exception {
-        client.messageSent(var1);
     }
 }
