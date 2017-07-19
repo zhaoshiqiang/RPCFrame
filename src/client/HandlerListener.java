@@ -24,7 +24,8 @@ public class HandlerListener implements IHandlerListener {
 
     @Override
     public void sessionClosed() throws Exception {
-
+        //client要操作ConnectionsManager做一些操作，比如从ConnectionsManager中移除关闭的connection或者重新尝试打开connection
+        client.close();
     }
 
 

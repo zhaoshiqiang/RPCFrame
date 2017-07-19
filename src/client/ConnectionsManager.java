@@ -62,9 +62,25 @@ public class ConnectionsManager {
             BasicFuture future = callFutureFactory.create(listener);
             if (getOpenedState()){
                 Connection con = connections.get(nextConnection.getAndIncrement());
-                return con.submit(future,objs);
+                if (con.getClosed()){
+                    //若该连接没有关闭则发送请求
+                    return con.submit(future,objs);
+                }else {
+                    //若有一个连接关闭，则关闭全部连接
+                    try {
+                        close();
+                    } catch (CallException e) {
+                        /**
+                         * 该异常只有在连接全部关闭之后，再调用{@link #close()}方法时才会抛出，
+                         * 但是如果连接全部关闭，{@link #getOpenedState()}会返回false，根本不会进入到这里，
+                         * 所以这个异常在这里是不会发生的，故而直接忽略。
+                         * */
+                    }
+                    future.setDone(new ConnectionClosedException("connections are not opened yet !"),null);
+                    return future;
+                }
             }else {
-                future.setDone(new ConnectionClosedException("connection is not opened yet !"),null);
+                future.setDone(new ConnectionClosedException("connections are not opened yet !"),null);
                 return future;
             }
         }finally {

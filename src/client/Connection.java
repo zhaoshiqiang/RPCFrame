@@ -26,11 +26,16 @@ import java.util.logging.Logger;
  */
 public class Connection {
     private static final Logger LOGGER = LogFormatter.getLogger(Connection.class);
-
+    //和TCP/IP相关
     private final InetSocketAddress addr;
+    //和RPC连接相关
     private final long connectTimeout;
     private final long writeTimeout;
-
+    /*
+    * 保存最后一次I/O发生的时间，如果长时间没有数据交换，那么IPC连接会进行相应的维护工作，如关闭连接，从而释放相关资源。服务器端也应该有这个参数
+    * */
+    private AtomicLong lastActivity = new AtomicLong();
+    //和远程调用相关
     private final ConcurrentHashMap<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
     private IoSession session;
     private AtomicLong reqId = new AtomicLong(0);
@@ -120,7 +125,9 @@ public class Connection {
     public Boolean getClosed() {
         return closed.get();
     }
-
+    public void setClosed(){
+        closed.set(true);
+    }
     /**
      * 关闭连接，这里会关闭请求队列，并且将队列中的所有请求失败.
      */

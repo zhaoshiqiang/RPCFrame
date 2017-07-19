@@ -59,7 +59,9 @@ public class ClientHandler extends IoHandlerAdapter {
 
     @Override
     public void sessionClosed(IoSession session) throws Exception {
-
+        /**
+        * connection的关闭策略是一旦关闭，则callMap中的所有future全部返回{@link ConnectionClosedException}
+        * */
         Map<Long, BasicFuture> callMap = connection.getCallMap();
         synchronized (callMap){
             Set<Long> keySet = callMap.keySet();
@@ -77,6 +79,8 @@ public class ClientHandler extends IoHandlerAdapter {
          * 还可以通过方法调用使客户端主动关闭连接，而此时，closed这个状态是为true的
          */
         if (!connection.getClosed()){
+            //将connection设置为关闭
+            connection.setClosed();
             handlerListener.exceptionCaught(new IOException("Connection to " + session.getRemoteAddress() + " reset by peer"));
         }
         handlerListener.sessionClosed();
