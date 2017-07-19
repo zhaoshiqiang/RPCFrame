@@ -12,7 +12,7 @@ public class ExecutorCompletionService {
     private final BlockingQueue<BasicFuture> completionQueue;
     protected final ConnectionsManager connectionsManager;
 
-    public ExecutorCompletionService(Executor executor, ConnectionsManager connectionsManager) {
+    public ExecutorCompletionService(ConnectionsManager connectionsManager) {
         this.connectionsManager = connectionsManager;
         this.completionQueue = new LinkedBlockingDeque<>();
     }

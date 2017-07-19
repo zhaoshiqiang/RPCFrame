@@ -15,7 +15,7 @@ public class Client {
     public static final long DEFAULT_WRITE_TIMEOUT = 10 * UnitUtils.SECOND;
     public static final long DEFAULT_CONNECT_TIMEOUT = 10 * UnitUtils.SECOND;
 
-    protected ConnectionsManager connectionsManager;
+    protected ExecutorCompletionService completionService;
 
     public static Client getNewInstance(InetSocketAddress addr,int connectionCount){
         return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,CallFuture.DefaultCallFutureFactory.instance);
@@ -29,7 +29,11 @@ public class Client {
     }
 
     protected Client(int connectionCount, long connectTimeout, InetSocketAddress addr, long writeTimeout, ICallFutureFactory callFutureFactory){
-        connectionsManager = ConnectionsManager.getNewInstance(connectionCount, connectTimeout, addr, writeTimeout,callFutureFactory);
+
+        if (callFutureFactory instanceof QueueingFuture.QueueingFutureFactory){
+            ((QueueingFuture.QueueingFutureFactory)callFutureFactory).setCompletionService(completionService);
+        }
+        completionService = new ExecutorCompletionService(ConnectionsManager.getNewInstance(connectionCount, connectTimeout, addr, writeTimeout,callFutureFactory));
     }
 
     /**
@@ -40,17 +44,17 @@ public class Client {
      */
     public Future submit(ICallFinishListener listener,IWritable... objs) throws ConnectionClosedException {
         //如果连接是关闭的，则直接返回
-        if (!connectionsManager.getOpenedState()) {
+        if (!completionService.getOpenedState()) {
             throw new ConnectionClosedException("connections are not opened yet !");
         }
-        return connectionsManager.submit(listener,objs);
+        return completionService.submit(listener,objs);
     }
 
     public boolean open() throws CallException {
-        return connectionsManager.open(new HandlerListener(this));
+        return completionService.open(new HandlerListener(this));
     }
     public boolean isOpened(){
-        return connectionsManager.getOpenedState();
+        return completionService.getOpenedState();
     }
     /**
      * 客户端主动关闭连接，所有没有完成或者返回的请求都会失败。
@@ -58,16 +62,6 @@ public class Client {
      * @throws CallException
      */
     public boolean close() throws CallException {
-        return connectionsManager.close();
-    }
-
-    /**
-     * 当Client中的任意一个connection遇到异常exception的时候，会回调这个方法，让client 统一处理异常.
-     * client对于异常的处理办法是断开所有的到服务器的连接。
-     *
-     * @param e
-     */
-    void onConnectionException(Throwable e) throws CallException {
-        close();
+        return completionService.close();
     }
 }
