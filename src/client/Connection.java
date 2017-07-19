@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +34,7 @@ public class Connection {
     private final ConcurrentHashMap<Long, BasicFuture> callMap = new ConcurrentHashMap<Long, BasicFuture>();
     private IoSession session;
     private AtomicLong reqId = new AtomicLong(0);
-    private volatile Boolean closed;
+    private AtomicBoolean closed;
 
     Connection(InetSocketAddress addr, long connectTimeout, long writeTimeout){
         this.addr = addr;
@@ -74,7 +75,7 @@ public class Connection {
 
         this.session = connectFuture.getSession();
         this.session.setWriteTimeout((int) (writeTimeout/UnitUtils.SECOND));
-        this.closed = false;
+        this.closed = new AtomicBoolean(false);
     }
     public Future submit(BasicFuture future, IWritable... objs){
         long id = reqId.addAndGet(1);
@@ -85,7 +86,7 @@ public class Connection {
 
         //先检查，后执行
         synchronized (callMap){
-            if (closed){
+            if (closed.get()){
                 future.setDone(new ConnectionClosedException("connection closed in previous call"),null);
                 return future;
             }else {
@@ -117,14 +118,14 @@ public class Connection {
 
 
     public Boolean getClosed() {
-        return closed;
+        return closed.get();
     }
 
     /**
      * 关闭连接，这里会关闭请求队列，并且将队列中的所有请求失败.
      */
     public void close() {
-        this.closed = true;
+        closed.set(true);
         session.close();
     }
 }
