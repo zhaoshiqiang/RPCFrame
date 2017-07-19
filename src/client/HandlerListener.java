@@ -31,7 +31,7 @@ public class HandlerListener implements IHandlerListener {
 
     @Override
     public void exceptionCaught(Throwable cause) throws Exception {
-        client.onConnectionException(cause);
+        client.close();
 
     }
 
