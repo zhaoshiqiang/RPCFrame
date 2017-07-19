@@ -38,10 +38,10 @@ public class Client {
      * @param listener
      * @return
      */
-    public Future submit(ICallFinishListener listener,IWritable... objs){
+    public Future submit(ICallFinishListener listener,IWritable... objs) throws ConnectionClosedException {
         //如果连接是关闭的，则直接返回
         if (!connectionsManager.getOpenedState()) {
-            return null;
+            throw new ConnectionClosedException("connections are not opened yet !");
         }
         return connectionsManager.submit(listener,objs);
     }
