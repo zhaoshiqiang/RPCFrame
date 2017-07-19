@@ -149,7 +149,7 @@ public class RPCClient<T> {
      * @param args
      * @return
      */
-    private Future invoke(Method method, Object[] args) {
+    private Future invoke(Method method, Object[] args) throws ConnectionClosedException {
         return invoke(null,method,args);
     }
 
@@ -162,7 +162,7 @@ public class RPCClient<T> {
      * @param args
      * @return
      */
-    public Future invoke(ICallFinishListener listener,Method method, Object[] args) {
+    public Future invoke(ICallFinishListener listener,Method method, Object[] args) throws ConnectionClosedException {
         int argcount = args==null ? 0 : args.length;
         IWritable[] params = new IWritable[argcount+1];
         params[0]=new StringWritable(method.getName());
