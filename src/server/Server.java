@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Server {
 
     private final static int DEFAULT_IO_WORK_COUNT = 1;
+    private final static int DEFAULT_PROCESSOR_WORK_COUNT = 1;
 
     private ContextManager contextManager;
     private int port;
@@ -49,30 +50,42 @@ public class Server {
     private IoAcceptor acceptor;
     private volatile boolean terminated;
     private IRequestHandler requestHandler;
-    private int maxQueueSize = -1;
+    private int maxQueueSize;
 
     private boolean verbose = false;
     private RejectedExecutionHandler rejectedExecutionHandler;
+
+    public Server(int port,Object instance){
+        this(port,new RequestHandler(instance));
+    }
+    public Server(int port,Object instance,boolean verbose){
+        this(port,new RequestHandler(instance));
+    }
+    public Server(int port, IRequestHandler handler) {
+        this(port,DEFAULT_PROCESSOR_WORK_COUNT,DEFAULT_IO_WORK_COUNT,handler,-1,false);
+    }
 
     public Server(int port, //服务端口
                   int processorNumber, //工作线程数
                   IRequestHandler handler,  //处理请求逻辑类
                   int maxQueueSize //服务可接受请求最大等待数目
     ){
-        this(port,processorNumber,DEFAULT_IO_WORK_COUNT,handler,maxQueueSize);
+        this(port,processorNumber,DEFAULT_IO_WORK_COUNT,handler,maxQueueSize,false);
     }
 
     public Server(int port, //服务端口
                   int ioWorkerNumber, //IO线程数
                   int processorNumber, //工作线程数
                   IRequestHandler handler,  //处理请求逻辑类
-                  int maxQueueSize //服务可接受请求最大等待数目
+                  int maxQueueSize, //服务可接受请求最大等待数目
+                  boolean verbose
     ){
         this.port = port;
         this.ioWorkerNumber = ioWorkerNumber;
         this.processorNumber = processorNumber;
         this.maxQueueSize = maxQueueSize;
         this.requestHandler = handler;
+        this.verbose = verbose;
     }
 
     /**
