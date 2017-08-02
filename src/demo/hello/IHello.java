@@ -1,10 +1,23 @@
 package demo.hello;
 
+import rpc.RPCException;
+
 /**
  * Created by zhaoshiqiang on 2017/6/5.
  */
-public interface IHello {
+public interface IHello{
+    /**
+     *
+     * @param name
+     * @return "Hello ${name}!".
+     * @throws RPCException
+     */
+    String hello(String name) throws RPCException;
 
-    String hello(String name, int number);
-    String hello();
+    /**
+     *  不带名字的hello接口，应该返回"Hello ${name}!"，其中name是上次hello的时候记住的.
+     * @return
+     * @throws RPCException
+     */
+    String hello() throws RPCException;
 }
