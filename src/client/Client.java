@@ -24,6 +24,9 @@ public class Client {
     public static Client getNewInstance(InetSocketAddress addr,ICallFutureFactory callFutureFactory){
         return getNewInstance(addr,1,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,callFutureFactory);
     }
+    public static Client getNewInstance(InetSocketAddress addr,ICallFutureFactory callFutureFactory,int connectionCount){
+        return getNewInstance(addr,connectionCount,DEFAULT_CONNECT_TIMEOUT,DEFAULT_WRITE_TIMEOUT,callFutureFactory);
+    }
     public static Client getNewInstance(InetSocketAddress addr, int connectionCount, long connectTimeout, long writeTimeout, ICallFutureFactory callFutureFactory){
        return new Client(connectionCount, connectTimeout, addr, writeTimeout,callFutureFactory);
     }
