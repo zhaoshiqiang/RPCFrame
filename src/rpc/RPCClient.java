@@ -71,6 +71,10 @@ public class RPCClient<T> {
         this.callTimeUnit = unit;
     }
 
+    public RPCClient(InetSocketAddress addr) {
+        this.addr = addr;
+    }
+
     public RPCClient(InetSocketAddress addr, Class<T> cls)  {
         this.addr = addr;
         this.cls = cls;
@@ -83,6 +87,11 @@ public class RPCClient<T> {
         return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls,IRPCClientCommon.class},new invokeProxy());
     }
 
+    public RPCClient(InetSocketAddress addr, Class<T> cls, int connectionCount){
+        this.addr = addr;
+        this.cls = cls;
+        this.client = Client.getNewInstance(addr,RPCInvokeFuture.RPCInvokeFutureFactory.instance,connectionCount);
+    }
     /**
      * 返回连接是否已经被打开.
      * @return
@@ -98,6 +107,13 @@ public class RPCClient<T> {
         client.close();
     }
 
+    /**
+     * 打开连接
+     * @throws CallException
+     */
+    public void open() throws CallException {
+        client.open();
+    }
     /**
      * 对于proxy对象的方法调用，这是一个同步的方法，这里可以对函数进行拦截等操作
      * @param proxy
@@ -151,7 +167,7 @@ public class RPCClient<T> {
      * @param args
      * @return
      */
-    protected Future invoke(Method method, Object[] args) throws ConnectionClosedException {
+    public Future invoke(Method method, Object[] args) throws ConnectionClosedException {
         return invoke(null,method,args);
     }
 
