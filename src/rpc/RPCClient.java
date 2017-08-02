@@ -71,13 +71,15 @@ public class RPCClient<T> {
         this.callTimeUnit = unit;
     }
 
-    public RPCClient(InetSocketAddress addr, Class<T> cls) {
+    public RPCClient(InetSocketAddress addr, Class<T> cls)  {
         this.addr = addr;
         this.cls = cls;
         this.client = Client.getNewInstance(addr,RPCInvokeFuture.RPCInvokeFutureFactory.instance);
     }
 
-    public  <T> T getProxy() {
+    public  <T> T getProxy() throws CallException{
+        client.open();
+        validateRPCInterface(cls);
         return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls,IRPCClientCommon.class},new invokeProxy());
     }
 
@@ -149,7 +151,7 @@ public class RPCClient<T> {
      * @param args
      * @return
      */
-    private Future invoke(Method method, Object[] args) throws ConnectionClosedException {
+    protected Future invoke(Method method, Object[] args) throws ConnectionClosedException {
         return invoke(null,method,args);
     }
 
@@ -173,7 +175,33 @@ public class RPCClient<T> {
         return client.submit(listener,params);
     }
 
+    protected static void validateRPCInterface(Class<?> protocol) throws ClassCastException{
+        Method[] ms = protocol.getMethods();
+        for (int i=0; i<ms.length; i++){
+            Method m = ms[i];
+            Class<?>[] exs = m.getExceptionTypes();
+            boolean valid = false;
+            for (int j=0; j<exs.length; j++){
+                if (exs[j].isAssignableFrom(RPCException.class)){
+                    valid = true;
+                    break;
+                }
+            }
 
+            if (!valid){
+                StringBuffer exsBuf = new StringBuffer();
+                exsBuf.append("<");
+                for (Class<?> c : exs){
+                    exsBuf.append(c.getName()).append(",");
+                }
+                exsBuf.append(">");
+                throw new ClassCastException("Method" + m.getName()
+                + "(...) of RPC interface" + protocol
+                + " is not declared as throwing PRCExecption( available exception is " +
+                        exsBuf.toString() +"). Plesse fix that.");
+            }
+        }
+    }
 
     private class invokeProxy implements InvocationHandler{
         @Override
