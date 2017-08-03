@@ -2,5 +2,5 @@
 lib/
 .idea/*
 build/*
-.~ml
+*.~ml
 out/*
