@@ -62,7 +62,7 @@ public class ConnectionsManager {
             BasicFuture future = callFutureFactory.create(listener);
             if (getOpenedState()){
                 Connection con = connections.get(nextConnection.getAndIncrement());
-                if (con.getClosed()){
+                if (!con.getClosed()){
                     //若该连接没有关闭则发送请求
                     return con.submit(future,objs);
                 }else {
