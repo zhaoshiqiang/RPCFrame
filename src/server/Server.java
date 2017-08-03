@@ -50,6 +50,7 @@ public class Server {
     private IoAcceptor acceptor;
     private volatile boolean terminated;
     private IRequestHandler requestHandler;
+    private IContextListener contextListener;
     private int maxQueueSize;
 
     private boolean verbose = false;
@@ -57,12 +58,17 @@ public class Server {
 
     public Server(int port,Object instance){
         this(port,new RequestHandler(instance));
+        if (instance instanceof IContextListener){
+            contextListener = (IContextListener) instance;
+        }else {
+            contextListener = null;
+        }
     }
     public Server(int port,Object instance,boolean verbose){
-        this(port,new RequestHandler(instance));
+        this(port,DEFAULT_PROCESSOR_WORK_COUNT,DEFAULT_IO_WORK_COUNT,new RequestHandler(instance),-1,verbose,null);
     }
     public Server(int port, IRequestHandler handler) {
-        this(port,DEFAULT_PROCESSOR_WORK_COUNT,DEFAULT_IO_WORK_COUNT,handler,-1,false);
+        this(port,DEFAULT_PROCESSOR_WORK_COUNT,DEFAULT_IO_WORK_COUNT,handler,-1,false,null);
     }
 
     public Server(int port, //服务端口
@@ -70,7 +76,7 @@ public class Server {
                   IRequestHandler handler,  //处理请求逻辑类
                   int maxQueueSize //服务可接受请求最大等待数目
     ){
-        this(port,processorNumber,DEFAULT_IO_WORK_COUNT,handler,maxQueueSize,false);
+        this(port,processorNumber,DEFAULT_IO_WORK_COUNT,handler,maxQueueSize,false,null);
     }
 
     public Server(int port, //服务端口
@@ -78,7 +84,8 @@ public class Server {
                   int processorNumber, //工作线程数
                   IRequestHandler handler,  //处理请求逻辑类
                   int maxQueueSize, //服务可接受请求最大等待数目
-                  boolean verbose
+                  boolean verbose,
+                  IContextListener contextListener
     ){
         this.port = port;
         this.ioWorkerNumber = ioWorkerNumber;
@@ -86,6 +93,7 @@ public class Server {
         this.maxQueueSize = maxQueueSize;
         this.requestHandler = handler;
         this.verbose = verbose;
+        this.contextListener = contextListener;
     }
 
     /**
@@ -126,8 +134,8 @@ public class Server {
                 new NamedThreadFactory("processThread",true),
                 rejectedExecutionHandler);
 
-        if (requestHandler instanceof IContextListener){
-            contextManager = new ContextManager((IContextListener) requestHandler);
+        if (contextListener != null){
+            contextManager = new ContextManager(contextListener);
         }else {
             contextManager = new ContextManager();
         }
