@@ -52,10 +52,9 @@ import java.util.concurrent.TimeoutException;
  * </code>
  * Created by zhaoshiqiang on 2017/6/1.
  */
-public class RPCClient<T> {
+public class RPCClient {
 
     protected InetSocketAddress addr;
-    protected Class<T> cls;
     protected Client client;
     protected long callTimeout = 0;
     protected TimeUnit callTimeUnit;
@@ -71,25 +70,19 @@ public class RPCClient<T> {
         this.callTimeUnit = unit;
     }
 
-    public RPCClient(InetSocketAddress addr) {
+    public RPCClient(InetSocketAddress addr) throws CallException {
         this.addr = addr;
-    }
-
-    public RPCClient(InetSocketAddress addr, Class<T> cls)  {
-        this.addr = addr;
-        this.cls = cls;
         this.client = Client.getNewInstance(addr,RPCInvokeFuture.RPCInvokeFutureFactory.instance);
     }
 
-    public  <T> T getProxy() throws CallException{
+    public  <T> T getProxy(Class<T> cls) throws CallException{
         client.open();
         validateRPCInterface(cls);
         return (T) Proxy.newProxyInstance(cls.getClassLoader(),new Class[]{cls,IRPCClientCommon.class},new invokeProxy());
     }
 
-    public RPCClient(InetSocketAddress addr, Class<T> cls, int connectionCount){
+    public RPCClient(InetSocketAddress addr, int connectionCount){
         this.addr = addr;
-        this.cls = cls;
         this.client = Client.getNewInstance(addr,RPCInvokeFuture.RPCInvokeFutureFactory.instance,connectionCount);
     }
     /**
@@ -267,7 +260,7 @@ public class RPCClient<T> {
     }
 
     /**
-     * 在通过{@link #getProxy()}生成rpc proxy对象的时候，
+     * 在通过{@link #getProxy(Class)}生成rpc proxy对象的时候，
      * 每个rpc proxy对象实际还实现了{@link IRPCClientCommon}的接口.
      * 这样便可以通过rpc proxy对象释放底层的连接。
      * 使用方式为((RPCClient.IRPCClientCommon)proxyInstance).__close();
