@@ -21,7 +21,7 @@ public class HelloImpl implements IHello , IContextListener{
     public String hello() {
         Context context = ThreadState.getContext();
         if (context != null){
-            return "hello" + context.get("name");
+            return "hello " + context.get("name");
         }else {
             return "Hello, may I known your name?";
         }
@@ -40,7 +40,7 @@ public class HelloImpl implements IHello , IContextListener{
          if (name == null) {
              System.out.println("unknown user stayed here for " + (end-start) + "ms.");
          } else {
-             System.out.println(name + " stayed here for " + (end-start) + "ms.");
+             System.out.println(name + " stayed here for " + (end-start) + " ms.");
          }
     }
 }
