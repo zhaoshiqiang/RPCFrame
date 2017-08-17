@@ -2372,7 +2372,7 @@
 </XPD:OBJ>
 <XPD:OBJ name="Attributes[1]" type="UMLAttribute" guid="54z0POgoH0Ka1uIh5K8GUAAA">
 <XPD:ATTR name="Name" type="string">sessions</XPD:ATTR>
-<XPD:ATTR name="TypeExpression" type="string">Object</XPD:ATTR>
+<XPD:ATTR name="TypeExpression" type="string">HashSet&lt;IoSession&gt;</XPD:ATTR>
 <XPD:REF name="Owner">6mo3eCfDQE2Fo6VZ1FfGDAAA</XPD:REF>
 </XPD:OBJ>
 </XPD:OBJ>
