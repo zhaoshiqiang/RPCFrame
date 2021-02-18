@@ -269,3 +269,8 @@ future.get();
 
 #### 请求超时控制
 在创建RPC proxy的时候，我们可以指定calltimeout，这个值表示如果在这段时间内请求没有返回，就会抛出RPCTimeoutException。如果不指定这个值，默认的timeout时间是Long.MAX_VALUE，也就是没有timeout。当然，在异步调用的接口中，还可以为请求指定timeout，这个对于处理一些timeout和基本设置不一样的请求会有用。
+
+# 优化点
+1. 利用netty替换mina
+2. 利用zk进行服务发现
+3. 利用kryo进行序列化 和 反序列化
